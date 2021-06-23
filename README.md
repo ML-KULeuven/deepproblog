@@ -1,6 +1,5 @@
 # DeepProbLog
-
-[![Python application](https://github.com/ML-KULeuven/deepproblog-dev/actions/workflows/python-app.yml/badge.svg)](https://github.com/ML-KULeuven/deepproblog-dev/actions/workflows/python-app.yml)
+[![Unit tests](https://github.com/ML-KULeuven/deepproblog/actions/workflows/python-app.yml/badge.svg)](https://github.com/ML-KULeuven/deepproblog/actions/workflows/python-app.yml)
 
 DeepProbLog is an extension of [ProbLog](https://dtai.cs.kuleuven.be/problog/)
 that integrates Probabilistic Logic Programming with deep learning by introducing the neural predicate. 
