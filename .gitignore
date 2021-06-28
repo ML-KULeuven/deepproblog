@@ -229,7 +229,6 @@ deepproblog.egg-info/
 *.pdf
 *.pth
 *.pyc
-*.txt
 
 *.ipynb
 
