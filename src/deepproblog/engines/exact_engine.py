@@ -1,6 +1,6 @@
 import torch
 from numpy.random import choice
-
+from typing import List, Union
 from deepproblog.engines.engine import Engine
 from deepproblog.network import Network
 from problog.engine import DefaultEngine
@@ -22,11 +22,17 @@ from problog.program import SimpleProgram
 EXTERN = "{}_extern_nocache_"
 
 
-def wrap_tensor(x, store):
+def wrap_tensor(x, store, name: Union[Term, List[Term]] = None):
     if type(x) is list:
-        return list2term([wrap_tensor(e, store) for e in x])
+        if name is None:
+            return list2term([wrap_tensor(e, store) for e in x])
+        else:
+            return list2term([wrap_tensor(x[i], store, name[i]) for i in range(len(x))])
     else:
-        return Term("tensor", Constant(store.store(x)))
+        if name is None:
+            return Term("tensor", Constant(store.store(x)))
+        else:
+            return Term("tensor", store.store(x, name))
 
 
 def create_with_substitution(formula, second, translation, key):
@@ -74,7 +80,8 @@ def get_predicate(net):
 def get_det_predicate(net: Network, engine: Engine):
     def det_predicate(arguments):
         output = net([term2list(arguments, False)])[0]
-        return wrap_tensor(output, engine.tensor_store)
+        tensor_name = Term("nn", Term(net.name), arguments)
+        return wrap_tensor(output, engine.tensor_store, name=tensor_name)
 
     return det_predicate
 
@@ -192,8 +199,8 @@ class ExactEngine(Engine):
         body = Term(EXTERN.format(net), inputs, output)
         return [Clause(head, body)]
 
-    def register_foreign(self, func, function_name, arity):
-        signature = ["+term"] * arity[0] + ["-term"] * arity[1]
+    def register_foreign(self, func, function_name, arity_in, arity_out):
+        signature = ["+term"] * arity_in + ["-term"] * arity_out
         problog_export.database = self.model.solver.program
         problog_export(*signature)(func, funcname=function_name, modname=None)
 
