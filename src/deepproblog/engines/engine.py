@@ -43,12 +43,15 @@ class Engine(object):
         """
         raise NotImplementedError("ground is an abstract method")
 
-    def register_foreign(self, func: callable, function_name: str, arity: int):
+    def register_foreign(
+        self, func: callable, function_name: str, arity_in: int, arity_out: int
+    ):
         """
         Makes a Python function available to the grounding engine.
         :param func: The Python function to be made available.
         :param function_name: The name of the predicate that will be used to address this function in logic.
-        :param arity: The arity of the function.
+        :param arity_in: The number of input arguments to func
+        :param arity_out The number of return values of func
         :return:
         """
         raise NotImplementedError("register_foreign is an abstract method")

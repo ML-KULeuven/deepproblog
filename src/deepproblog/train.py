@@ -5,7 +5,6 @@ from typing import List, Callable, Union
 from deepproblog.dataset import DataLoader
 from deepproblog.model import Model
 from deepproblog.query import Query
-from deepproblog.semiring import Result
 from deepproblog.utils.logger import Logger
 from deepproblog.utils.stop_condition import EpochStop
 from deepproblog.utils.stop_condition import StopCondition

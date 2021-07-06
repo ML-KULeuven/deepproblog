@@ -91,12 +91,18 @@ class Dataset(ABC):
 
 
 class DataLoader(object):
-    def __init__(self, dataset: Dataset, batch_size: int, shuffle: bool = True):
+
+    __slots__ = ("dataset", "batch_size", "length", "shuffle", "epoch", "rng", "i")
+
+    def __init__(
+        self, dataset: Dataset, batch_size: int, shuffle: bool = True, seed=None
+    ):
         """
 
         :param dataset: The dataset that this loader will iterate over.
         :param batch_size: The batch size.
         :param shuffle: If true, the queries are shuffled, otherwise, they returned in order.
+        :param seed: Seed for random shuffle.
         """
         self.dataset = dataset.to_queries()
         self.batch_size = batch_size
@@ -104,6 +110,7 @@ class DataLoader(object):
         self.shuffle = shuffle
         self.dataset = self.dataset[: self.length]
         self.epoch = 0
+        self.rng = random.Random(seed)
         self._set_iter()
 
     def _shuffling(self):
@@ -114,7 +121,7 @@ class DataLoader(object):
     def _set_iter(self):
         if self._shuffling():
             indices = list(range(self.length))
-            random.shuffle(indices)
+            self.rng.shuffle(indices)
             self.i = iter(indices)
         else:
             self.i = iter(range(self.length))

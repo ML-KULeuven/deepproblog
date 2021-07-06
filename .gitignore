@@ -232,7 +232,7 @@ deepproblog.egg-info/
 
 *.ipynb
 
-
+venv/
 data/FB15k/mmkb/
 data/MNIST/MNIST/processed/test.pt
 data/MNIST/MNIST/processed/training.pt

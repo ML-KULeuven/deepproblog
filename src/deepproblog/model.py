@@ -1,4 +1,5 @@
 import json
+import os
 import pickle
 import time
 from collections import defaultdict
@@ -27,7 +28,7 @@ from .utils import check_path
 class Model(object):
     def __init__(
         self,
-        program_string: str,
+        program_string: Union[str, os.PathLike],
         networks: Collection[Network],
         embeddings: Optional[TermEmbedder] = None,
         load: bool = True,
@@ -42,7 +43,7 @@ class Model(object):
         """
         self.networks = dict()
         if load:
-            self.program: LogicProgram = PrologFile(program_string)
+            self.program: LogicProgram = PrologFile(str(program_string))
         else:
             self.program: LogicProgram = PrologString(program_string)
         self.parameters = []
@@ -170,8 +171,10 @@ class Model(object):
             self.networks[n].train()
         self.solver.engine.train()
 
-    def register_foreign(self, *args, **kwargs):
-        self.solver.engine.register_foreign(*args, **kwargs)
+    def register_foreign(
+        self, func: callable, function_name: str, arity_in: int, arity_out: int
+    ):
+        self.solver.engine.register_foreign(func, function_name, arity_in, arity_out)
 
     def __str__(self):
         return "\n".join(str(line) for line in self.program)

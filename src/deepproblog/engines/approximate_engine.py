@@ -190,9 +190,9 @@ class ApproximateEngine(Engine):
         db.registerForeign(get_tensor_probability, "get_tensor_probability")
 
     @staticmethod
-    def get_wrapped_func(func, arity):
+    def get_wrapped_func(func, arity_in, arity_out):
         def wrapped_func(*arguments):
-            inputs_args, output_args = arguments[: arity[0]], arguments[arity[0] :]
+            inputs_args, output_args = arguments[:arity_in], arguments[arity_out:]
             result = func(*inputs_args)
             if type(result) is not func:
                 result = (result,)
@@ -202,9 +202,9 @@ class ApproximateEngine(Engine):
 
         return wrapped_func
 
-    def register_foreign(self, func, function_name, arity):
-        wrapped_func = self.get_wrapped_func(func, arity)
-        wrapped_func.arity = arity[0] + arity[1]
+    def register_foreign(self, func, function_name, arity_in, arity_out):
+        wrapped_func = self.get_wrapped_func(func, arity_in, arity_out)
+        wrapped_func.arity = arity_in + arity_out
         self.model.solver.program.registerForeign(wrapped_func, function_name)
 
     def get_hyperparameters(self) -> dict:

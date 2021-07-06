@@ -73,7 +73,8 @@ class Cache(Generic[K, T]):
         filepath = self.cache_root / str(hash(cache_key))
         result = None
         if filepath.exists():
-            (key, result) = pickle.load(open(filepath, "rb"))
+            with open(filepath, "rb") as f:
+                (key, result) = pickle.load(f)
             if key == cache_key:
                 return result
             else:
@@ -82,5 +83,6 @@ class Cache(Generic[K, T]):
         if result is None:
             result = self.func(item)
             check_path(filepath)
-            pickle.dump((cache_key, result), open(filepath, "wb"))
+            with open(filepath, "wb") as f:
+                pickle.dump((cache_key, result), f)
         return result
