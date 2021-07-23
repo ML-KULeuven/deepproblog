@@ -295,7 +295,6 @@ class SWIProgram(ProbLogObject):
         :return: A list of results to the query.
         """
         self.assert_all()
-        query = str(query)
 
         # Replaces $VAR(X) with actual variables
         # Needed when specified queries are non ground
@@ -350,8 +349,8 @@ class SWIProgram(ProbLogObject):
         if self.db is not None:
             return list(self.add_program(self.db))
 
-    def registerForeign(self, *args, **kwargs):
-        registerForeign(*args, **kwargs)
+    def registerForeign(self, func, name, arity=None, **kwargs):
+        registerForeign(func, name, arity, **kwargs)
 
     def extend(self):
         print("Extending")

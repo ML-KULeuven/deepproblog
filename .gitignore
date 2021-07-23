@@ -232,7 +232,7 @@ deepproblog.egg-info/
 
 *.ipynb
 
-venv/
+
 data/FB15k/mmkb/
 data/MNIST/MNIST/processed/test.pt
 data/MNIST/MNIST/processed/training.pt
@@ -257,3 +257,4 @@ src/deepproblog/examples/Poker/data/cards/rendered/
 src/deepproblog/examples/Poker/data/images/
 src/deepproblog/examples/Smokers/data/
 src/deepproblog/examples/Successor/data/MNIST/
+/venv/

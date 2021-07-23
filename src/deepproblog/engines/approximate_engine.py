@@ -18,6 +18,7 @@ from problog.logic import (
 )
 from problog.program import SimpleProgram
 from deepproblog.tensor import TensorStore
+from pyswip import Variable, registerForeign
 
 
 def wrap_tensor(x, store: TensorStore):
@@ -192,20 +193,31 @@ class ApproximateEngine(Engine):
     @staticmethod
     def get_wrapped_func(func, arity_in, arity_out):
         def wrapped_func(*arguments):
-            inputs_args, output_args = arguments[:arity_in], arguments[arity_out:]
-            result = func(*inputs_args)
+            input_args, output_args = arguments[:arity_in], arguments[arity_in:]
+            input_args = [pyswip_to_term(x) for x in input_args]
+            result = func(*input_args)
             if type(result) is not func:
                 result = (result,)
             result = [term_to_pyswip(r) for r in result]
             for o, r in zip(output_args, result):
-                o.unify(r)
+                if type(o) is Variable:
+                    o.unify(r)
+                else:
+                    if o != r:
+                        return False
 
         return wrapped_func
 
     def register_foreign(self, func, function_name, arity_in, arity_out):
         wrapped_func = self.get_wrapped_func(func, arity_in, arity_out)
         wrapped_func.arity = arity_in + arity_out
-        self.model.solver.program.registerForeign(wrapped_func, function_name)
+        registerForeign(wrapped_func, function_name)
+        builtin_name = "{}({})".format(
+            function_name, ",".join(["_"] * (arity_in + arity_out))
+        )
+        list(self.engine.prolog.query(
+            "assertz(allowed_builtin({}))".format(builtin_name)
+        ))
 
     def get_hyperparameters(self) -> dict:
         parameters = {

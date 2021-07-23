@@ -50,7 +50,6 @@ def pyswip_to_term(
             e, vars2 = pyswip_to_term(o, True)
             lst.append(e)
             variables.update(vars2)
-        # return list2term([pyswip_to_term(o) for o in pyswip_obj])
         new_term = list2term(lst)
     elif type(pyswip_obj) is Variable:
         new_term = Var(
@@ -58,7 +57,7 @@ def pyswip_to_term(
         )
         variables = {new_term: pyswip_obj}
     elif type(pyswip_obj) is bytes:
-        new_term = Constant('"' + pyswip_obj.decode("utf-8") + '"')
+        new_term = Constant(pyswip_obj.decode("utf-8"))
     else:
         raise Exception(
             "Unhandled type {} from object {}".format(type(pyswip_obj), pyswip_obj)
@@ -79,7 +78,6 @@ def term_to_pyswip(term: ProblogObject) -> PySwipObject:
 
         functor = Functor(term.functor, arity=term.arity)
         return functor(*args)
-        # return Functor(term.functor, arity=term.arity, args=args)
     elif type(term) is Constant:
         return term.functor
     elif type(term) is Var:

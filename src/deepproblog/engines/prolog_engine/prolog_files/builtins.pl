@@ -1,9 +1,12 @@
+:-dynamic allowed_builtin/1.
+
 rstrip(_,[],[]) :- !.
 rstrip(S,[S|T],[]) :-rstrip(S,T,[]),!.
 rstrip(S,[H|T],[H|T2]) :- rstrip(S,T,T2).
 
 allowed_builtin(writeln(_)).
 allowed_builtin(write(_)).
+allowed_builtin(writeq(_)).
 allowed_builtin(true).
 allowed_builtin(\==(_,_)).
 allowed_builtin(==(_,_)).
@@ -37,6 +40,7 @@ allowed_builtin(append(_,_,_)).
 allowed_builtin(number(_)).
 allowed_builtin(between(_,_,_)).
 allowed_builtin(=..(_,_)).
+allowed_builtin(=(_,_)).
 allowed_builtin(\+(_)).
 allowed_builtin(findall(_,_,_)).
 allowed_builtin(forall(_,_)).

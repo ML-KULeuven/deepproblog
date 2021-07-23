@@ -5,13 +5,25 @@ from pyswip import Prolog
 
 from problog.engine import GenericEngine
 from problog.formula import LogicFormula
-from problog.logic import Term, Var
+from problog.logic import Term, Var, Constant
 from .swi_program import SWIProgram
 from ...heuristics import Heuristic
-
+from .swip import term_to_pyswip
 
 root = Path(__file__).parent
 
+def escape_strings_in_term(term: Term):
+    if type(term) is Term:
+        return Term(term.functor, *(escape_strings_in_term(x) for x in term.args))
+    elif type(term) is Var:
+        return term
+    elif type(term) is Constant:
+        if term.is_string():
+            value = term.value
+            if value[0] != '"' and value[-1] != '"':
+                return Constant('"'+value+'"')
+        return term
+    raise ValueError('{} not handled in escape_strings_in_term'.format(type(term)))
 
 class PrologEvaluationException(Exception):
     """Exception from PrologEngine for unexpected result when evaluating a query."""
@@ -44,7 +56,7 @@ class PrologEngine(GenericEngine):
             sp = self.prepare(sp)
         if target is None:
             target = LogicFormula(keep_all=True)
-        proofs = self.get_proofs(str(term), sp)
+        proofs = self.get_proofs(term, sp)
         result = sp.add_proof_trees(proofs, target=target, label=label)
         return result
 
@@ -64,10 +76,11 @@ class PrologEngine(GenericEngine):
             self.ground(sp, q, target, *args, **kwargs)
         return target
 
-    def get_proofs(self, q, program: SWIProgram, profile=0):
+    def get_proofs(self, q: Term, program: SWIProgram, profile=0):
         exploration = "true" if self.exploration else "false"
+        q_term = escape_strings_in_term(q)
         query_str = "prove({},{},Proofs,{},{})".format(
-            q, self.k, self.heuristic.name, exploration
+            q_term, self.k, self.heuristic.name, exploration
         )
         if self.timeout is not None:
             query_str = "call_with_time_limit({},{})".format(self.timeout, query_str)
