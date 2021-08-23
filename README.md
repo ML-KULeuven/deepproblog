@@ -15,7 +15,7 @@ DeepProbLog has the following requirements:
 * [PySDD](https://pysdd.readthedocs.io/en/latest/)
 * [PyTorch](https://pytorch.org/)
 * [TorchVision](https://pytorch.org/vision/stable/index.html)
-* [PySwip](https://github.com/yuce/pyswip)
+* [PySwip](https://github.com/ML-KULeuven/pyswip) (our fork)
 
 ## Experiments
 
