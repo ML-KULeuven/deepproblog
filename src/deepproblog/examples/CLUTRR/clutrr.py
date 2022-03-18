@@ -49,7 +49,8 @@ model = Model(model_filename, [rel_net, lstm_net, gender_net])
 
 heuristic = GeometricMean()
 if configuration["method"] == "exact":
-    model.set_engine(ExactEngine(model))
+    raise Exception('The CLUTRR experiment is currently not supported in the Exact Engine')
+    # model.set_engine(ExactEngine(model))
 elif configuration["method"] == "gm":
     model.set_engine(ApproximateEngine(model, 1, heuristic, exploration=True))
 

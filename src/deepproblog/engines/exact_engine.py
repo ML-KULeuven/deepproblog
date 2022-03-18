@@ -81,7 +81,9 @@ def get_det_predicate(net: Network, engine: Engine):
     def det_predicate(arguments):
         output = net([term2list(arguments, False)])[0]
         tensor_name = Term("nn", Term(net.name), arguments)
+        # FIXME named tensor outputs for lists
         return wrap_tensor(output, engine.tensor_store, name=tensor_name)
+
 
     return det_predicate
 

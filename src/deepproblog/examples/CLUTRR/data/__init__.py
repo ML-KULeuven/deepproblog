@@ -270,7 +270,7 @@ class Story(object):
         # sentences = [Constant('"' + ' '.join(s[1]) + '"') for s in self.get_sentences()]
         for e, s in self.get_sentences():
             e = list2term([Constant(x) for x in e])
-            s = Constant('"' + " ".join(s) + '"')
+            s = Constant(" ".join(s))
             sentences.append(Term("s", e, s))
         query_term = Term(
             "clutrr_text",

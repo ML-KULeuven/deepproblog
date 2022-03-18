@@ -79,9 +79,7 @@ class PrologEngine(GenericEngine):
     def get_proofs(self, q: Term, program: SWIProgram, profile=0):
         exploration = "true" if self.exploration else "false"
         q_term = escape_strings_in_term(q)
-        query_str = "prove({},{},Proofs,{},{})".format(
-            q_term, self.k, self.heuristic.name, exploration
-        )
+        query_str = "prove({},{},Proofs,{},{})".format(q_term, self.k, self.heuristic.name, exploration)
         if self.timeout is not None:
             query_str = "call_with_time_limit({},{})".format(self.timeout, query_str)
         try:
