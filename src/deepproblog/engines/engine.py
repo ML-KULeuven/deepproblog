@@ -3,8 +3,9 @@ from typing import TYPE_CHECKING, Sequence
 from deepproblog.query import Query
 from deepproblog.tensor import TensorStore
 from problog.formula import LogicFormula
-from problog.logic import Term
+from problog.logic import Term, Constant
 from problog.program import LogicProgram
+import torch
 
 if TYPE_CHECKING:
     from deepproblog.model import Model
@@ -59,6 +60,8 @@ class Engine(object):
     def get_tensor(self, tensor_term: Term):
         if tensor_term.functor == "tensor":
             return self.tensor_store[tensor_term.args[0]]
+        if type(tensor_term) is Constant and type(tensor_term.functor) is float:
+            return torch.FloatTensor([tensor_term.functor])
         return tensor_term
 
     def get_hyperparameters(self) -> dict:
