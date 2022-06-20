@@ -13,11 +13,12 @@ DeepProbLog has the following requirements:
 
 * [ProbLog](https://dtai.cs.kuleuven.be/problog/)
 * [PySDD](https://pysdd.readthedocs.io/en/latest/)
-    - Use `pip3 install git+https://github.com/ML-KULeuven/pyswip`
+    - Use `pip3 install git+https://github.com/wannesm/PySDD.git#egg=PySDD`
 * [PyTorch](https://pytorch.org/)
 * [TorchVision](https://pytorch.org/vision/stable/index.html)
 * [PySwip](https://github.com/ML-KULeuven/pyswip)
-    - Use `pip3 install git+https://github.com/wannesm/PySDD.git#egg=PySDD`
+    - Use `pip3 install git+https://github.com/ML-KULeuven/pyswip`
+
 
 ## Experiments
 
