@@ -1,0 +1,9 @@
+numpy
+problog
+pyswip
+torchvision
+torch
+pillow
+pysdd
+pytest
+setuptools

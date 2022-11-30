@@ -19,15 +19,9 @@ class PartialProbability(Heuristic):
         super().__init__("partial_probability")
 
 
-ucs = PartialProbability()
-
-
 class GeometricMean(Heuristic):
     def __init__(self):
         super().__init__("geometric_mean")
-
-
-geometric_mean = GeometricMean()
 
 
 class LearnedHeuristic(Heuristic):
@@ -62,8 +56,8 @@ class NeuralHeuristic(LearnedHeuristic):
         if self.freeze:
             return None
         acs = list(zip(*acs))
-        loss = 0
-        N = 0
+        loss = torch.zeros(1)
+        n = 0
         for i, (ac, semiring) in enumerate(acs):
             names = ac.get_named()
             for name in names:
@@ -71,18 +65,18 @@ class NeuralHeuristic(LearnedHeuristic):
                     target = 1.0
                     value = self.cache[name]
                     if target == 1.0:
-                        l = -torch.log(value)
+                        newloss = -torch.log(value)
                     else:
-                        l = -(
+                        newloss = -(
                             target * torch.log(value)
                             + (1.0 - target) * torch.log(1.0 - value)
                         )
-                    if isnan(l):
+                    if isnan(newloss):
                         raise ValueError("nan loss")
-                    loss += l
-                    N += 1
-        if N > 0:
-            loss /= N
+                    loss += newloss
+                    n += 1
+        if n > 0:
+            loss /= n
             loss.backward(retain_graph=True)
         self.cache.clear()
         self.t += 1

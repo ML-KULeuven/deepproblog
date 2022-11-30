@@ -1,7 +1,5 @@
 from typing import Dict, Tuple, Union
 
-from pyswip import Functor, Atom, Variable
-
 from problog.logic import (
     Term,
     Constant,
@@ -15,6 +13,7 @@ from problog.logic import (
 )
 from problog.parser import PrologParser
 from problog.program import ExtendedPrologFactory
+from pyswip import Functor, Atom, Variable
 
 PySwipObject = Union[Functor, Atom, Variable, int, float, list, bytes]
 ProblogObject = Union[Term, Constant, Var, Clause, And, Or]
@@ -30,7 +29,6 @@ def pyswip_to_term(
             args2, variables2 = pyswip_to_term(a, True)
             args.append(args2)
             variables.update(variables2)
-        # args = [pyswip_to_term(a) for a in pyswip_obj.args]
         operator = pyswip_obj.name.get_value()
         if operator == ":-":
             new_term = Clause(*args)
@@ -59,9 +57,7 @@ def pyswip_to_term(
     elif type(pyswip_obj) is bytes:
         new_term = Constant(pyswip_obj.decode("utf-8"))
     else:
-        raise Exception(
-            "Unhandled type {} from object {}".format(type(pyswip_obj), pyswip_obj)
-        )
+        raise Exception(f"Unhandled type {type(pyswip_obj)} from object {pyswip_obj}")
     if with_variables:
         return new_term, variables
     else:
@@ -84,9 +80,7 @@ def term_to_pyswip(term: ProblogObject) -> PySwipObject:
         return Variable(name=term.name)
     else:
         raise Exception(
-            "Unhandled type {} from object {} -> Robin has to fix it".format(
-                type(term), term
-            )
+            f"Unhandled type {type(term)} from object {term} -> Robin has to fix it"
         )
 
 

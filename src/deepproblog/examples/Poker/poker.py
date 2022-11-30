@@ -1,3 +1,5 @@
+import torch
+
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
@@ -7,7 +9,6 @@ from deepproblog.network import Network
 from deepproblog.optimizer import SGD
 from deepproblog.train import train_model
 from deepproblog.utils.standard_networks import smallnet
-import torch
 
 batch_size = 50
 datasets = {

@@ -1,11 +1,11 @@
 from collections import defaultdict
+from typing import Tuple, List
 
 import torchvision.transforms as transforms
-from typing import Tuple, List
-from deepproblog.dataset import ImageDataset
-from deepproblog.query import Query
 from problog.logic import Term, Constant, list2term
 
+from deepproblog.dataset import ImageDataset
+from deepproblog.query import Query
 
 transform = transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
@@ -60,8 +60,9 @@ class PokerSeparate(ImageDataset):
             for line in f:
                 cards: List[Card] = [c.split(" of ") for c in line.strip().split(",")]
                 count[cards[-1][0]] += 1
-                h1, h2 = best_hand(cards[:2] + [cards[-1]], self.suits), best_hand(
-                    cards[2:], self.suits
+                h1, h2 = (
+                    best_hand(cards[:2] + [cards[-1]], self.suits),
+                    best_hand(cards[2:], self.suits),
                 )
                 result = get_outcome(h1, h2)
                 result_probabilities = get_probabilities(

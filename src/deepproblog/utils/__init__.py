@@ -62,8 +62,8 @@ def nth(iterable, n, default=None):
 def get_configuration(parameters: dict, i: int) -> dict:
     config = dict()
     for k in parameters:
-        l = len(parameters[k])
-        j, i = i % l, i // l
+        length = len(parameters[k])
+        j, i = i % length, i // length
         config[k] = parameters[k][j]
     return config
 
@@ -112,10 +112,11 @@ class Table(object):
                 return i
         raise ValueError("{} not in dimensions".format(dim))
 
-    def aggregate(self, l):
-        if l is None or len(l) == 0:
+    @staticmethod
+    def aggregate(data):
+        if data is None or len(data) == 0:
             return ""
-        mu, sig = mean(l), stdev(l)
+        mu, sig = mean(data), stdev(data)
         return "{:.5f} ± {:.5f}".format(mu, sig)
 
     def format(self, x, y, val, **kwargs):
@@ -126,7 +127,7 @@ class Table(object):
         val = self.get_dimension_index(val)
         x_cats = list(self.dimensions[x].categories)
         y_cats = list(self.dimensions[y].categories)
-        data = [[None] * len(x_cats) for _ in y_cats]
+        data = [[list() for _ in x_cats] for _ in y_cats]
         for d in self.data:
             j = x_cats.index(d[x])
             i = y_cats.index(d[y])
@@ -136,8 +137,6 @@ class Table(object):
                     correct_categories = False
                     break
             if correct_categories:
-                if data[i][j] is None:
-                    data[i][j] = []
                 data[i][j].append(d[val])
         data = [[self.aggregate(d) for d in row] for row in data]
         return TabularFormatter.format(data, x_cats, y_cats)
@@ -188,7 +187,7 @@ class NoConfigException(Exception):
 def load_config(filename: str = None):
     """
     Loads a config file.
-    :param filename: Filename of configuration file to load. If None, it uses the first commandline argument as filename.
+    :param filename: Filename of configuration file to load. If None, use the first commandline argument as filename.
     :return: None
     """
     try:

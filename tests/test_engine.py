@@ -1,6 +1,5 @@
 import pytest
 from deepproblog.engines import ApproximateEngine
-from deepproblog.heuristics import geometric_mean
 from deepproblog.model import Model
 from deepproblog.query import Query
 from problog.logic import Term, Constant, Var
@@ -10,7 +9,7 @@ from deepproblog.solver import SolverException
 def _create_model(program, cache=False) -> Model:
     """Setup code: Load a program minimally"""
     model = Model(program, [], load=False)
-    engine = ApproximateEngine(model, 10, geometric_mean)
+    engine = ApproximateEngine(model, 10, ApproximateEngine.geometric_mean)
     model.set_engine(engine, cache=cache)
     return model
 
@@ -68,17 +67,17 @@ d :- a(1),b(2).
 
 def test_fact():
     program = """
-0.8::a(_).
-c :- a(1),a(2).
-d :- a(1),a(1).
+0.8::d(_).
+e :- d(1),d(2).
+f :- d(1),e.
     """
     model = _create_model(program)
-    q = Query(Term("c"))
-    r = model.solve([q])[0].result[Term("c")]
-    assert pytest.approx(0.64) == r
-    q = Query(Term("d"))
-    r = model.solve([q])[0].result[Term("d")]
-    assert pytest.approx(0.8) == r
+    q = Query(Term("e"))
+    r = model.solve([q])[0].result
+    assert pytest.approx(0.64) == r[Term("e")]
+    q = Query(Term("f"))
+    r = model.solve([q])[0].result
+    assert pytest.approx(0.64) == r[Term("f")]
 
 
 def test_fact2():
@@ -126,19 +125,35 @@ a(Text,I,Word) :- writeq(a(Text,I)), ith_word(Text,I,Word).
 
     def ith_word(text, i):
         text = text.value
-        word = text.split(' ')[int(i)]
+        word = text.split(" ")[int(i)]
         return Constant(word)
 
     model = _create_model(program)
     model.register_foreign(ith_word, "ith_word", 2, 1)
-    queries = [Query(Term("a", Constant('one two three'), Constant(x), Var('X'))) for x in range(3)]
+    queries = [
+        Query(Term("a", Constant("one two three"), Constant(x), Var("X")))
+        for x in range(3)
+    ]
     r = model.solve(queries)
-    assert pytest.approx(1.0) == r[0].result[Term("a", Constant('one two three'), Constant(0), Constant('one'))]
-    assert pytest.approx(1.0) == r[1].result[Term("a", Constant('one two three'), Constant(1), Constant('two'))]
-    assert pytest.approx(1.0) == r[2].result[Term("a", Constant('one two three'), Constant(2), Constant('three'))]
-    queries = [Query(Term("a", Constant('"one two three"'), Constant(1), Var('X')))]
-    r = model.solve(queries)
-    assert pytest.approx(1.0) == r[0].result[Term("a", Constant('one two three'), Constant(1), Constant('two'))]
+    assert (
+        pytest.approx(1.0)
+        == r[0].result[
+            Term("a", Constant("one two three"), Constant(0), Constant("one"))
+        ]
+    )
+    assert (
+        pytest.approx(1.0)
+        == r[1].result[
+            Term("a", Constant("one two three"), Constant(1), Constant("two"))
+        ]
+    )
+    assert (
+        pytest.approx(1.0)
+        == r[2].result[
+            Term("a", Constant("one two three"), Constant(2), Constant("three"))
+        ]
+    )
+
 
 def test_assignment():
     program = """
@@ -154,4 +169,3 @@ a(X) :- X=3.
     q = Query(Term("a", Var("X")))
     r = model.solve([q])[0].result[Term("a", Constant(3))]
     assert pytest.approx(1.0) == r
-

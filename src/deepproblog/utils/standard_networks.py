@@ -1,6 +1,8 @@
+from typing import Dict, Union
+
 import torch
 import torch.nn as nn
-from typing import Dict, Union
+import torch.utils.model_zoo as model_zoo
 from problog.logic import Term
 
 
@@ -23,9 +25,6 @@ class MLP(nn.Module):
         x = self.nn(x)
         return x
 
-
-import torch.nn as nn
-import torch.utils.model_zoo as model_zoo
 
 model_urls = {
     "alexnet": "https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth",
@@ -64,8 +63,8 @@ class SmallNet(nn.Module):
         )
         self.N = 2304
         if size is not None:
-            input = torch.empty(1, 3, *size)
-            out = self.features(input)
+            inputs = torch.empty(1, 3, *size)
+            out = self.features(inputs)
             self.N = torch.numel(out)
         self.classifier = nn.Sequential(
             nn.Linear(self.N, 100),

@@ -1,4 +1,4 @@
-#The coins experiment
+# The coins experiment
 
 ## Data generation
 To generate the data, Blender 2.79 needs to be installed.

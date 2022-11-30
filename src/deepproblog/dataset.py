@@ -4,11 +4,11 @@ from math import ceil
 from pathlib import Path
 from typing import List, Optional, Tuple, TextIO, Union, Callable, Iterable
 
-from PIL import Image
-
 import problog
-from deepproblog.query import Query
+from PIL import Image
 from problog.logic import Term, Constant
+
+from deepproblog.query import Query
 
 
 class Dataset(ABC):
@@ -91,7 +91,6 @@ class Dataset(ABC):
 
 
 class DataLoader(object):
-
     __slots__ = ("dataset", "batch_size", "length", "shuffle", "epoch", "rng", "i")
 
     def __init__(
@@ -284,7 +283,7 @@ class NoiseMutatorDecorator:
         """
         self.p = p
         if seed is None:
-            seed = random.SystemRandom().randint(0, 2 ** 64)
+            seed = random.SystemRandom().randint(0, 2**64)
         self.seed = seed
         self.inner_mutator = inner_mutator
 
@@ -311,7 +310,7 @@ class NumericIncorrectOutputMutator:
         self.domain = domain
         self.change_p = change_p
         if seed is None:
-            seed = random.SystemRandom().randint(0, 2 ** 64)
+            seed = random.SystemRandom().randint(0, 2**64)
         self.seed = seed
 
     def __call__(self, index: int, query: Query) -> Query:

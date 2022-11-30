@@ -1,14 +1,15 @@
 from time import time
 from typing import Type, TYPE_CHECKING, Optional, List, Sequence
 
+from problog.formula import LogicFormula
+from problog.logic import Term
+
 from deepproblog.arithmetic_circuit import ArithmeticCircuit
 from deepproblog.engines import Engine
 from deepproblog.query import Query
 from deepproblog.semiring import Result
 from deepproblog.semiring.graph_semiring import GraphSemiring, Semiring
 from deepproblog.utils.cache import Cache
-from problog.formula import LogicFormula
-from problog.logic import Term
 
 if TYPE_CHECKING:
     from deepproblog.model import Model
@@ -31,6 +32,7 @@ class Solver(object):
         semiring: Type[Semiring] = GraphSemiring,
         cache: bool = False,
         cache_root: Optional[str] = None,
+        sdd_auto_gc: bool = False,
     ):
         """
 
@@ -39,6 +41,7 @@ class Solver(object):
         :param semiring: The semiring that will be used to evaluate the arithmetic circuits.
         :param cache: If true, then arithmetic circuits will be cached.
         :param cache_root: If cache_root is not None, then the cache is persistent and is saved to that directory.
+        :param sdd_auto_gc: Controls if the PySDD auto-GC feature should be turned on (may be needed for large problems)
         """
         if cache and not engine.can_cache():
             raise SolverException(
@@ -55,6 +58,7 @@ class Solver(object):
         self.model = model
         self.program = self.engine.prepare(model.program)
         self.semiring = semiring
+        self.sdd_auto_gc = sdd_auto_gc
 
     def build_ac(self, q: Query) -> ArithmeticCircuit:
         """
@@ -66,7 +70,9 @@ class Solver(object):
 
         ground = self.engine.ground(q, label=LogicFormula.LABEL_QUERY)
         ground_time = time() - start
-        ac = ArithmeticCircuit(ground, self.semiring, ground_time=ground_time)
+        ac = ArithmeticCircuit(
+            ground, self.semiring, ground_time=ground_time, sdd_auto_gc=self.sdd_auto_gc
+        )
         return ac
 
     def solve(self, batch: Sequence[Query]) -> List[Result]:

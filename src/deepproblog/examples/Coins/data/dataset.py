@@ -15,8 +15,7 @@ transform = transforms.Compose(
 
 class Coins(ImageDataset):
     def __init__(
-        self,
-        subset,
+        self, subset,
     ):
         super().__init__("{}/image_data/{}/".format(path, subset), transform=transform)
         self.data = []
@@ -32,11 +31,6 @@ class Coins(ImageDataset):
     def to_query(self, i):
         c1, c2, outcome = self.data[i]
         sub = {Term("a"): Term("tensor", Term(self.subset, Constant(i)))}
-        # if j == 0:
-        #     return Term('coin', Constant(j + 1), Term('a'), Term(c1)), sub
-        # elif j == 1:
-        #     return Term('coin', Constant(j + 1), Term('a'), Term(c2)), sub
-        # else:
         return Query(Term("game", Term("a"), Term(outcome)), sub)
 
     def __len__(self):

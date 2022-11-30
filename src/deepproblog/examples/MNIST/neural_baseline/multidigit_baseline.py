@@ -5,11 +5,12 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset
-from deepproblog.utils.logger import Logger
+
+from deepproblog.examples.MNIST.data import addition
 from deepproblog.examples.MNIST.neural_baseline.baseline_models import (
     Separate_Baseline_Multi,
 )
-from deepproblog.examples.MNIST.data import addition
+from deepproblog.utils.logger import Logger
 from deepproblog.utils.stop_condition import StopOnPlateau
 
 
@@ -36,10 +37,8 @@ def test_addition(dset):
 
 test_dataset = addition(2, "test")
 
-
 Train = namedtuple("Train", ["logger"])
 modelname = "Separate_multi"
-
 
 for N in [14900]:
     # for N in [150, 1500, 14000]:

@@ -1,4 +1,3 @@
-import sys
 from json import dumps
 
 import torch
@@ -6,59 +5,36 @@ import torch
 from deepproblog.dataset import DataLoader
 from deepproblog.engines import ApproximateEngine, ExactEngine
 from deepproblog.evaluate import get_confusion_matrix
+from deepproblog.examples.MNIST.data import MNIST_train, MNIST_test, addition
 from deepproblog.examples.MNIST.network import MNIST_Net
-from deepproblog.examples.MNIST.data import (
-    MNIST_train,
-    MNIST_test,
-    addition,
-)
-from deepproblog.heuristics import geometric_mean
 from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.train import train_model
-from deepproblog.utils import get_configuration, format_time_precise, config_to_string
 
-i = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+method = "exact"
+N = 1
 
-parameters = {
-    "method": ["gm", "exact"],
-    "N": [1, 2, 3],
-    "pretrain": [0],
-    "exploration": [False, True],
-    "run": range(5),
-}
+name = "addition_{}_{}".format(method, N)
 
-configuration = get_configuration(parameters, i)
-torch.manual_seed(configuration["run"])
-
-name = "addition_" + config_to_string(configuration) + "_" + format_time_precise()
-print(name)
-
-train_set = addition(configuration["N"], "train")
-test_set = addition(configuration["N"], "test")
+train_set = addition(N, "train")
+test_set = addition(N, "test")
 
 network = MNIST_Net()
 
-pretrain = configuration["pretrain"]
+pretrain = 0
 if pretrain is not None and pretrain > 0:
-    network.load_state_dict(
-        torch.load("models/pretrained/all_{}.pth".format(configuration["pretrain"]))
-    )
+    network.load_state_dict(torch.load("models/pretrained/all_{}.pth".format(pretrain)))
 net = Network(network, "mnist_net", batching=True)
 net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
 
 model = Model("models/addition.pl", [net])
-if configuration["method"] == "exact":
-    if configuration["exploration"] or configuration["N"] > 2:
-        print("Not supported?")
-        exit()
+if method == "exact":
     model.set_engine(ExactEngine(model), cache=True)
-elif configuration["method"] == "gm":
+elif method == "geometric_mean":
     model.set_engine(
-        ApproximateEngine(
-            model, 1, geometric_mean, exploration=configuration["exploration"]
-        )
+        ApproximateEngine(model, 1, ApproximateEngine.geometric_mean, exploration=False)
     )
+
 model.add_tensor_source("train", MNIST_train)
 model.add_tensor_source("test", MNIST_test)
 

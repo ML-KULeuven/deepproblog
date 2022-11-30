@@ -56,7 +56,11 @@ def get_confusion_matrix(
 
 
 def get_fact_accuracy(
-    model: Model, dataset: Dataset, verbose: int = 0, threshold: float = 0.5
+    model: Model,
+    dataset: Dataset,
+    verbose: int = 0,
+    threshold: float = 0.5,
+    empty_answer: str = "false",
 ) -> ConfusionMatrix:
     """
 
@@ -66,6 +70,7 @@ def get_fact_accuracy(
     If verbose > 1, then print all wrong answers.
     :param threshold: If set, then the answer will be treated as a float, and will be considered correct if
     the difference between the predicted and ground truth value is smaller than eps.
+    :param empty_answer: The category in the confusion matrix when no answer was returned. Default = "false"
     :return: The confusion matrix when evaluating model on dataset.
     """
     confusion_matrix = ConfusionMatrix()
@@ -74,7 +79,7 @@ def get_fact_accuracy(
     for i, query in enumerate(dataset.to_queries()):
         answer = model.solve([query])[0]
         if len(answer.result) == 0:
-            predicted = "no_answer"
+            predicted = empty_answer
             if verbose > 1:
                 print("no answer for query {}".format(query))
         else:

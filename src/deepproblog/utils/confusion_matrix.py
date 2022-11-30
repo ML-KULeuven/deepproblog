@@ -9,25 +9,25 @@ class ConfusionMatrix(object):
     def __init__(self, classes: Union[int, List[str]] = 0):
         if isinstance(classes, int):
             self.n = classes
-            self.classes = list(range(self.n))
+            self.classes: List[Union[str, int]] = list(range(self.n))
         else:
-            self.classes = classes
+            self.classes: List[Union[str, int]] = classes
             self.n = len(classes)
         self.matrix = np.zeros((self.n, self.n), dtype=np.uint)
 
-    def get_index(self, c):
+    def get_index(self, c: Union[str, int]):
         if c not in self.classes:
             self.grow(c)
         return self.classes.index(c)
 
-    def grow(self, c):
+    def grow(self, c: Union[str, int]):
         self.classes.append(c)
         self.n = len(self.classes)
         new_matrix = np.zeros((self.n, self.n), dtype=np.uint)
         new_matrix[0 : self.n - 1, 0 : self.n - 1] = self.matrix
         self.matrix = new_matrix
 
-    def add_item(self, predicted, actual):
+    def add_item(self, predicted: Union[str, int], actual: Union[str, int]):
         actual_i = self.get_index(actual)
         predicted_i = self.get_index(predicted)
 

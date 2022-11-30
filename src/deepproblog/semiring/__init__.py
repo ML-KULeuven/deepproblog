@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from typing import Optional, Dict, Union
 
 import torch
-
-from deepproblog.query import Query
 from problog.evaluator import Semiring as ProbLogSemiring
 from problog.formula import LogicFormula
 from problog.logic import Term
+
+from deepproblog.query import Query
 
 
 class Semiring(ProbLogSemiring, ABC):

@@ -26,15 +26,9 @@ setup(
     packages=find_packages(where="src"),
     zip_safe=False,
     include_package_data=True,
-    install_requires=[
-        "problog",
-        "pyswip",
-        "torch",
-        "torchvision",
-        "pysdd",
-    ],
+    install_requires=["problog", "torch", "torchvision", "pysdd"],
     extras_require={
-        "examples": ["networkx", "Pillow", "scipy", "scikit-learn"],
+        "examples": ["networkx", "Pillow", "scipy", "scikit-learn", "pyswip"],
         "tests": ["pytest"],
     },
 )

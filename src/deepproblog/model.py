@@ -6,14 +6,25 @@ from collections import defaultdict
 from io import BytesIO
 from os import PathLike
 from random import random
-from typing import Collection, Optional, Tuple, List, Mapping, Any, Sequence, Union
+from typing import (
+    Collection,
+    Optional,
+    Tuple,
+    List,
+    Mapping,
+    Any,
+    Sequence,
+    Union,
+    IO,
+    Callable,
+)
 from zipfile import ZipFile
 
 import torch
-
-from deepproblog.engines.builtins import register_tensor_predicates
 from problog.logic import term2list, Term, Clause, Constant, InstantiationError, Or
 from problog.program import PrologString, PrologFile, SimpleProgram, LogicProgram
+
+from deepproblog.engines.builtins import register_tensor_predicates
 from .dataset import Dataset, ImageDataset
 from .embeddings import TermEmbedder
 from .engines import Engine
@@ -122,7 +133,7 @@ class Model(object):
             "compile_times": compile_times,
         }
 
-    def save_state(self, filename: Union[str, PathLike], complete=False):
+    def save_state(self, filename: Union[str, PathLike, IO[bytes]], complete=False):
         """
         Saves the state of this model to a zip file with the given filename. This only includes the probabilistic
             parameters and all parameters of the neural networks, but not the model architecture or neural architectures
@@ -138,7 +149,7 @@ class Model(object):
                 with zipf.open(n, "w") as f:
                     self.networks[n].save(f, complete=complete)
 
-    def load_state(self, filename: Union[str, PathLike]):
+    def load_state(self, filename: Union[str, PathLike, IO[bytes]]):
         """
         Restore the state of this model from the given filename. This only includes the probabilistic parameters
             and all parameters of the neural networks, but not the model architecture or neural architectures.
@@ -172,7 +183,7 @@ class Model(object):
         self.solver.engine.train()
 
     def register_foreign(
-        self, func: callable, function_name: str, arity_in: int, arity_out: int
+        self, func: Callable, function_name: str, arity_in: int, arity_out: int
     ):
         self.solver.engine.register_foreign(func, function_name, arity_in, arity_out)
 
@@ -211,7 +222,7 @@ class Model(object):
 
     def get_hyperparameters(self) -> dict:
         """
-        Recursively build a dictionary containing the most important hyperparameters in the mode.
+        Recursively build a dictionary containing the most important hyperparameters in the model.
         :return: A dictionary that contains the values of the most important hyperparameters of the model.
         """
         parameters = dict()
@@ -280,7 +291,7 @@ class Model(object):
                 translated.add_statement(n)
         self.program = translated
 
-    def _add_parameter(self, val):
+    def _add_parameter(self, val: Constant):
         i = len(self.parameters)
         try:
             val = float(val)

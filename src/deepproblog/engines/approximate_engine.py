@@ -1,11 +1,3 @@
-from deepproblog.engines.engine import Engine
-from deepproblog.engines.prolog_engine import (
-    PrologEngine,
-    pyswip_to_term,
-    term_to_pyswip,
-)
-from deepproblog.engines.prolog_engine.swi_program import SWIProgram
-from deepproblog.heuristics import LearnedHeuristic, Heuristic
 from problog.logic import (
     Term,
     AnnotatedDisjunction,
@@ -17,8 +9,22 @@ from problog.logic import (
     list2term,
 )
 from problog.program import SimpleProgram
-from deepproblog.tensor import TensorStore
 from pyswip import Variable, registerForeign
+
+from deepproblog.engines.engine import Engine
+from deepproblog.engines.prolog_engine import (
+    PrologEngine,
+    pyswip_to_term,
+    term_to_pyswip,
+)
+from deepproblog.engines.prolog_engine.heuristics import (
+    GeometricMean,
+    PartialProbability,
+    Heuristic,
+    LearnedHeuristic,
+)
+from deepproblog.engines.prolog_engine.swi_program import SWIProgram
+from deepproblog.tensor import TensorStore
 
 
 def wrap_tensor(x, store: TensorStore):
@@ -36,6 +42,9 @@ def unwrap_tensor(x, model):
 
 
 class ApproximateEngine(Engine):
+    geometric_mean = GeometricMean()
+    ucs = PartialProbability()
+
     def __init__(
         self,
         model,
@@ -215,9 +224,11 @@ class ApproximateEngine(Engine):
         builtin_name = "{}({})".format(
             function_name, ",".join(["_"] * (arity_in + arity_out))
         )
-        list(self.engine.prolog.query(
-            "assertz(allowed_builtin({}))".format(builtin_name)
-        ))
+        list(
+            self.engine.prolog.query(
+                "assertz(allowed_builtin({}))".format(builtin_name)
+            )
+        )
 
     def get_hyperparameters(self) -> dict:
         parameters = {

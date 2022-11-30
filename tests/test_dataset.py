@@ -13,8 +13,8 @@ from problog.logic import Term, Constant
 
 
 def test_query_dataset(tmpdir):
-    with tmpdir.join("queries.txt").open(mode="wt") as tmpfile:
-        tmpfile.write(
+    with tmpdir.join("queries.txt").open(mode="wt") as tempfile:
+        tempfile.write(
             "a(2,3,5).\nsubs(a(3,3,b),[[b,123]]).\n0.5 :: subs(a(3,3,c),[[c,123]]).\n0.7 :: b(1,2,3)."
         )
     dataset_file = QueryDataset(tmpdir.join("queries.txt"))
@@ -39,8 +39,8 @@ def test_dataset_write_to_file(tmpdir):
             Query(parse("a(3,3,b)."), substitution={Term("b"): Constant(123)}),
         ]
     )
-    with tmpdir.join("queries_out.txt").open(mode="wt") as tmpfile:
-        dataset_list.write_to_file(tmpfile)
+    with tmpdir.join("queries_out.txt").open(mode="wt") as tempfile:
+        dataset_list.write_to_file(tempfile)
     # Test that we can reload it.
     dataset_reloaded = QueryDataset(tmpdir.join("queries_out.txt"))
     assert dataset_reloaded.queries == dataset_list.queries
@@ -75,7 +75,7 @@ def test_mutating_dataset():
         ]
     )
 
-    def mutator(i: int, q: Query):
+    def mutator(_: int, q: Query):
         q2 = copy.copy(q)
         q2.visited = True
         return q2
@@ -88,7 +88,7 @@ def test_noise_mutator():
     """Test that the noise is approximately correct"""
     hit_count = 0
 
-    def inner_mutator(i: int, q: Query):
+    def inner_mutator(_: int, q: Query):
         nonlocal hit_count
         hit_count += 1
         return q

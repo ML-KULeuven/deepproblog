@@ -3,7 +3,6 @@ import sys
 from math import pi
 
 import bpy
-
 # noinspection PyUnresolvedReferences,PyUnresolvedReferences
 from mathutils import Vector
 

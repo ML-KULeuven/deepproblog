@@ -4,10 +4,10 @@ from pathlib import Path
 
 import torchvision.transforms as transforms
 from PIL import Image
+from problog.logic import Term, Constant, list2term
 
 from deepproblog.dataset import Dataset
 from deepproblog.query import Query
-from problog.logic import Term, Constant, list2term
 
 root = Path(__file__).parent
 
@@ -81,10 +81,7 @@ class Expression(object):
         self.length = len(self.images)
 
     def to_query(self):
-        images = [
-            Term("tensor", Term("hwf", Constant('"' + path + '"')))
-            for path in self.images
-        ]
+        images = [Term("tensor", Term("hwf", Constant(path))) for path in self.images]
         term = Term("expression", list2term(images), Constant(self.res))
         return Query(term)
 

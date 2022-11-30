@@ -2,11 +2,9 @@ import pytest
 from deepproblog.utils.standard_networks import DummyNet
 from problog.logic import Term, Var
 from deepproblog.engines import ExactEngine, ApproximateEngine
-from deepproblog.heuristics import geometric_mean
 from deepproblog.model import Model
 from deepproblog.query import Query
 from deepproblog.network import Network
-import numpy as np
 
 program = """
 nn(dummy1,[X],Y,[a,b,c]) :: net1(X,Y).
@@ -32,7 +30,7 @@ dummy_net3 = Network(DummyNet(dummy_values3), "dummy3")
     params=[
         {
             "engine_factory": lambda model: ApproximateEngine(
-                model, 10, geometric_mean
+                model, 10, ApproximateEngine.geometric_mean
             ),
             "cache": False,
         },
@@ -78,9 +76,7 @@ def test_fact_network(model: Model):
 
 
 def test_det_network(model: Model):
-    q1 = Query(Term("test3", Term("i1"), Var("X")))
-    q2 = Query(Term("test3", Term("i2"), Var("X")))
-    results = model.solve([q1, q2])
+    results = model.solve([Query(Term("test3", Term("i1"), Var("X"))), Query(Term("test3", Term("i2"), Var("X")))])
     r1 = list(results[0].result)[0].args[1]
     r2 = list(results[1].result)[0].args[1]
     r1 = model.get_tensor(r1)

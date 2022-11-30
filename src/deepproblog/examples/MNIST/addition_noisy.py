@@ -1,16 +1,18 @@
 from random import randint
+
+import torch
+from problog.logic import Constant
+
 from deepproblog.dataset import DataLoader
+from deepproblog.dataset import NoiseMutatorDecorator, MutatingDataset
+from deepproblog.engines import ExactEngine
 from deepproblog.examples.MNIST.data import MNISTOperator, MNIST_train, MNIST_test
 from deepproblog.examples.MNIST.network import MNIST_Net
 from deepproblog.model import Model
 from deepproblog.network import Network
-from deepproblog.train import train_model
 from deepproblog.optimizer import SGD
-from deepproblog.engines import ExactEngine
-import torch
-from deepproblog.dataset import NoiseMutatorDecorator, MutatingDataset
 from deepproblog.query import Query
-from problog.logic import Constant
+from deepproblog.train import train_model
 
 
 def noise(_, query: Query):
@@ -26,7 +28,6 @@ dataset = MNISTOperator(
 )
 noisy_dataset = MutatingDataset(dataset, NoiseMutatorDecorator(0.2, noise))
 queries = DataLoader(noisy_dataset, 2)
-
 
 network = MNIST_Net()
 net = Network(network, "mnist_net", batching=True)

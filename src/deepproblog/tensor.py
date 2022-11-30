@@ -1,8 +1,7 @@
 from typing import Optional, Union
 
-from torch import Tensor
-
 from problog.logic import Term
+from torch import Tensor
 
 TensorStoreIndex = Union[int, Term]
 

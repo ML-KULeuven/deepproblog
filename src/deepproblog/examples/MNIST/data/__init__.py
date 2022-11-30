@@ -2,15 +2,15 @@ import itertools
 import json
 import random
 from pathlib import Path
-import torchvision
-import torchvision.transforms as transforms
-from torch.utils.data import Dataset as TorchDataset
 from typing import Callable, List, Iterable, Tuple
 
+import torchvision
+import torchvision.transforms as transforms
+from problog.logic import Term, list2term, Constant
+from torch.utils.data import Dataset as TorchDataset
 
 from deepproblog.dataset import Dataset
 from deepproblog.query import Query
-from problog.logic import Term, list2term, Constant
 
 _DATA_ROOT = Path(__file__).parent
 

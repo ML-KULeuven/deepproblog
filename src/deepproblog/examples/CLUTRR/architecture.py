@@ -2,7 +2,7 @@ from random import choices
 
 import torch
 import torch.nn as nn
-
+from typing import List
 from problog.logic import term2list
 
 
@@ -55,7 +55,7 @@ def tokenize_cloze(text, entities, vocab, nr_entities=10):
     entity_tokens = ["ENT{}".format(x) for x in range(nr_entities)]
     entity_tokens = choices(entity_tokens, k=len(entities))
     tokenized = []
-    indices = [[] for _ in range(len(entities))]
+    indices: List[List[int]] = [[] for _ in range(len(entities))]
     for i, word in enumerate(text):
         try:
             word = int(word)
@@ -122,9 +122,7 @@ class RelNet(nn.Module):
         self.in_size = in_size
         self.mid_size = mid_size
         self.out_size = in_size if out_size is None else out_size
-        self.embed = nn.Sequential(
-            nn.Linear(2 * self.in_size, self.out_size),
-        )
+        self.embed = nn.Sequential(nn.Linear(2 * self.in_size, self.out_size), )
         self.activation_layer = nn.Softmax(dim=-1)
         self.activation = activation
 

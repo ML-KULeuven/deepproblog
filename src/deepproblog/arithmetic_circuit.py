@@ -1,11 +1,12 @@
 from time import time
 from typing import Optional, List, Tuple, Dict, Type, TYPE_CHECKING
 
-from deepproblog.semiring import Result
-from deepproblog.semiring import Semiring
 from problog.formula import LogicDAG, LogicFormula
 from problog.logic import Term, term2list
 from problog.sdd_formula import SDD
+
+from deepproblog.semiring import Result
+from deepproblog.semiring import Semiring
 
 if TYPE_CHECKING:
     from deepproblog.model import Model
@@ -17,15 +18,17 @@ class ArithmeticCircuit(object):
         formula: LogicFormula,
         semiring: Optional[Type[Semiring]],
         ground_time: Optional[float] = None,
+        sdd_auto_gc: bool = False,
     ):
         """
         :param formula: The ground logic formula that will be compiled.
         :param semiring: Factory method that creates the semiring
         :param ground_time: Optional. Keep track of time it took to ground out formula. Used for timing statistics.
+        :param sdd_auto_gc: Controls if the PySDD auto-GC feature should be turned on (may be needed for large problems)
         """
         start = time()
-        self.proof = LogicDAG.createFrom(formula, keep_named=True)
-        self.sdd = SDD.create_from(self.proof)
+        self.proof = LogicDAG.create_from(formula, keep_named=True)
+        self.sdd = SDD.create_from(self.proof, sdd_auto_gc=sdd_auto_gc)
         self.compile_time = time() - start
         self.re_evaluate = False
         self.semiring = semiring
@@ -100,3 +103,20 @@ class ArithmeticCircuit(object):
         for n in self.sdd.get_names():
             named[n[0]] = n[1]
         return named
+
+    def save(self, filename):
+        manager = self.sdd.get_manager().get_manager()
+        i = list(self.sdd.queries())[0][1] - 1
+        inode = self.sdd.get_manager().nodes[i]
+        constraint_inode = self.sdd.get_constraint_inode()
+        node = self.sdd.get_manager().conjoin(inode, constraint_inode)
+        manager.minimize()
+        var_names = [
+            (var, self.sdd.get_node(atom).probability)
+            for var, atom in self.sdd.var2atom.items()
+        ]
+
+        manager.vtree().save((filename + ".vtree").encode())
+        manager.save((filename + ".sdd").encode(), node)
+        with open(filename + ".tsv", "w") as f:
+            f.write("\n".join(str(v) + "\t" + str(p) for v, p in var_names))

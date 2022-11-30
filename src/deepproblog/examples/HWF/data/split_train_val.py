@@ -1,9 +1,7 @@
 import json
 
-
 train = list()
 val = list()
-
 
 with open("expr_train.json") as f:
     data = json.load(f)

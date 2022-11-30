@@ -21,7 +21,7 @@ class MNIST_CNN(nn.Module):
 
 
 class MNIST_Classifier(nn.Module):
-    def __init__(self, N=10, with_softmax=True):
+    def __init__(self, n=10, with_softmax=True):
         super(MNIST_Classifier, self).__init__()
         self.with_softmax = with_softmax
         if with_softmax:
@@ -31,7 +31,7 @@ class MNIST_Classifier(nn.Module):
             nn.ReLU(),
             nn.Linear(120, 84),
             nn.ReLU(),
-            nn.Linear(84, N),
+            nn.Linear(84, n),
         )
 
     def forward(self, x):
@@ -42,12 +42,12 @@ class MNIST_Classifier(nn.Module):
 
 
 class MNIST_Net(nn.Module):
-    def __init__(self, N=10, with_softmax=True, size=16 * 4 * 4):
+    def __init__(self, n=10, with_softmax=True, size=16 * 4 * 4):
         super(MNIST_Net, self).__init__()
         self.with_softmax = with_softmax
         self.size = size
         if with_softmax:
-            if N == 1:
+            if n == 1:
                 self.softmax = nn.Sigmoid()
             else:
                 self.softmax = nn.Softmax(1)
@@ -64,11 +64,10 @@ class MNIST_Net(nn.Module):
             nn.ReLU(),
             nn.Linear(120, 84),
             nn.ReLU(),
-            nn.Linear(84, N),
+            nn.Linear(84, n),
         )
 
     def forward(self, x):
-        # x = x.unsqueeze(0)
         x = self.encoder(x)
         x = x.view(-1, self.size)
         x = self.classifier(x)

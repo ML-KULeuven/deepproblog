@@ -14,7 +14,7 @@ test = 8
 train_queries = QueryDataset("data/train{}_test{}_train.txt".format(train, test))
 test_queries = QueryDataset("data/train{}_test{}_test.txt".format(train, test))
 val = QueryDataset("data/train{}_test{}_dev.txt".format(train, test))
-# all_test = DataLoader(QueryDataset('data/tests.pl'), 16)
+
 
 net1 = EncodeModule(30, 50, 10, "tanh")
 network1 = Network(net1, "neural1")

@@ -5,15 +5,15 @@ from collections import defaultdict
 from time import time
 from typing import Any, Dict, List, Optional, Tuple, Union, Generator, Iterable
 
-from pyswip import Prolog, registerForeign, Variable
-
-from problog.program import LogicProgram
 from problog.core import ProbLogObject
 from problog.logic import And
 from problog.logic import Term, Clause, Or, AnnotatedDisjunction, Var
 from problog.logic import term2list, ArithmeticError
+from problog.program import LogicProgram
+from pyswip import Prolog, registerForeign, Variable
+
+from .heuristics import Heuristic
 from .swip import parse, pyswip_to_term
-from ...heuristics import Heuristic
 
 ALL_FACTS = "fa(_,_,_,_)"
 
@@ -35,6 +35,10 @@ def get_heuristic_func(heuristic_obj):
 
 class SWIProgramException(Exception):
     """Exception for prolog issues from SWIProgram"""
+
+
+# Regex for query variable replacement
+_RE_QUERY = re.compile(r"\$VAR\((.*?)\)")
 
 
 class SWIProgram(ProbLogObject):
@@ -271,7 +275,7 @@ class SWIProgram(ProbLogObject):
             new = target.TRUE
             target.add_disjunct(key, new)
         elif t == "nn":
-            net, inp, i = proof.args
+            # net, inp, i = proof.args
             target.add_atom()
         else:
             raise SWIProgramException("Unhandled node type " + str(proof))
@@ -298,17 +302,17 @@ class SWIProgram(ProbLogObject):
 
         # Replaces $VAR(X) with actual variables
         # Needed when specified queries are non ground
-        query = re.sub(r"\$VAR\((.*?)\)", r"X\1", query)
+        query = _RE_QUERY.sub(r"X\1", query)
         #
         start = 0
         if profile > 0:
             start = time()
             if profile > 1:
                 # query = 'profile((between(1,100,_),{},fail);true)'.format(query)
-                query = "profile({})".format(query)
+                query = f"profile({query})"
         result = list(self.prolog.query(query))
         if profile > 0:
-            print("Query: {} answered in {} seconds".format(query, time() - start))
+            print(f"Query: {query} answered in {time() - start} seconds")
             if profile > 1:
                 input()
         if result:
@@ -328,18 +332,19 @@ class SWIProgram(ProbLogObject):
 
     # Other
 
-    def to_prolog(self, f: FactOrClause) -> str:
+    @staticmethod
+    def to_prolog(f: FactOrClause) -> str:
         if f[0] == "fa":
             return "fa({},{},{},{})".format(*f[1:])
         elif f[0] == "cl":
             return "cl({},{},{})".format(*f[1:])
 
     def get_lines(self) -> List[str]:
-        lines = [self.to_prolog(c) for c in self.facts_and_clauses]
+        lines = [self.to_prolog(c) for c in self.facts_and_clauses if c is not None]
         return lines
 
     def __str__(self):
-        return "\n".join(l + "." for l in self.get_lines())
+        return "\n".join(line + "." for line in self.get_lines())
 
     def parse_db(self):
         """
@@ -349,7 +354,8 @@ class SWIProgram(ProbLogObject):
         if self.db is not None:
             return list(self.add_program(self.db))
 
-    def registerForeign(self, func, name, arity=None, **kwargs):
+    @staticmethod
+    def registerForeign(func, name, arity=None, **kwargs):
         registerForeign(func, name, arity, **kwargs)
 
     def extend(self):

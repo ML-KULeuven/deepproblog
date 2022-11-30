@@ -1,4 +1,6 @@
 import bisect
+from os import PathLike
+from typing import Dict, Any, List, Union, Iterable
 
 import numpy as np
 
@@ -7,11 +9,17 @@ from deepproblog.utils import check_path, split
 
 class Logger(object):
     def __init__(self):
-        self.log_data = dict()
-        self.indices = list()
-        self.comments = list()
+        self.log_data: Dict[str, Dict[int, Any]] = dict()
+        self.indices: List[int] = list()
+        self.comments: List[str] = list()
 
-    def log(self, name, index, value):
+    def clear(self):
+        """Clear history, needed when dealing with resetting training"""
+        self.log_data.clear()
+        self.indices.clear()
+        self.comments.clear()
+
+    def log(self, name: str, index: int, value: Any):
         if name not in self.log_data:
             self.log_data[name] = dict()
         i = bisect.bisect_left(self.indices, index)
@@ -19,15 +27,15 @@ class Logger(object):
             self.indices.insert(i, index)
         self.log_data[name][index] = value
 
-    def log_list(self, i, l):
-        if l is not None:
-            for e in l:
+    def log_list(self, i: int, data: Iterable):
+        if data is not None:
+            for e in data:
                 self.log(e[0], i, e[1])
 
-    def comment(self, comment):
+    def comment(self, comment: str):
         self.comments += comment.split("\n")
 
-    def get_attribute(self, attribute, include_indices=False):
+    def get_attribute(self, attribute: str, include_indices=False):
         sorted_attribute = []
         if attribute not in self.log_data:
             return []
@@ -40,7 +48,7 @@ class Logger(object):
             return indices, sorted_attribute
         return sorted_attribute
 
-    def get_union(self, att1, att2):
+    def get_union(self, att1: str, att2: str):
         indices = []
         sorted_attribute = []
         for i in self.indices:
@@ -52,7 +60,7 @@ class Logger(object):
 
         return indices, sorted_attribute
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str):
         return self.get_attribute(item, True)
 
     def __str__(self):
@@ -69,16 +77,15 @@ class Logger(object):
     def has_attribute(self, attribute):
         return attribute in self.log_data
 
-    def write_to_file(self, name):
-        # datetime = strftime('_%y%m%d_%H%M%S')
+    def write_to_file(self, name: str):
         filename = name + ".log"
         check_path(filename)
         with open(filename, "w") as f:
             f.write(str(self))
 
-    def read_from_file(self, fname):
+    def read_from_file(self, filename: Union[PathLike[str], str]):
         headers = None
-        with open(fname) as f:
+        with open(filename) as f:
             for line in f:
                 line = line.strip()
                 if line[0] == "#":

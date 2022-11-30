@@ -1,33 +1,39 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from deepproblog.train import TrainObject
+
+
 class StopCondition(object):
-    def is_stop(self, train_object):
+    def is_stop(self, train_object: "TrainObject"):
         raise NotImplementedError()
 
-    def __add__(self, other):
+    def __add__(self, other: "StopCondition"):
         return Or(self, other)
 
-    def __or__(self, other):
+    def __or__(self, other: "StopCondition"):
         return Or(self, other)
 
-    def __mul__(self, other):
+    def __mul__(self, other: "StopCondition"):
         return And(self, other)
 
-    def __and__(self, other):
+    def __and__(self, other: "StopCondition"):
         return And(self, other)
 
 
 class EpochStop(StopCondition):
-    def __init__(self, max_epoch):
+    def __init__(self, max_epoch: int):
         self.max_epoch = max_epoch
 
     def __str__(self):
         return "for {} epoch(s)".format(self.max_epoch)
 
-    def is_stop(self, train_object):
+    def is_stop(self, train_object: "TrainObject"):
         return train_object.epoch >= self.max_epoch
 
 
 class StopOnPlateau(StopCondition):
-    def __init__(self, attribute, delta=0.01, patience=5, warm_up=5):
+    def __init__(self, attribute: str, delta=0.01, patience=5, warm_up=5):
         self.attribute = attribute
         self.delta = delta
         self.patience = patience
@@ -37,7 +43,7 @@ class StopOnPlateau(StopCondition):
     def __str__(self):
         return "until plateau in {}".format(self.attribute)
 
-    def is_stop(self, train_object):
+    def is_stop(self, train_object: "TrainObject"):
         data = train_object.logger.get_attribute(self.attribute)
         if len(data) <= self.warm_up:
             return False
@@ -53,7 +59,7 @@ class StopOnPlateau(StopCondition):
 
 
 class StopOnNoChange(StopCondition):
-    def __init__(self, attribute, delta=0.01, patience=5, warm_up=5):
+    def __init__(self, attribute: str, delta=0.01, patience=5, warm_up=5):
         self.attribute = attribute
         self.delta = delta
         self.patience = patience
@@ -63,7 +69,7 @@ class StopOnNoChange(StopCondition):
     def __str__(self):
         return "until no change in {}".format(self.attribute)
 
-    def is_stop(self, train_object):
+    def is_stop(self, train_object: "TrainObject"):
         data = train_object.logger.get_attribute(self.attribute)
         if len(data) <= self.warm_up:
             return False
@@ -77,13 +83,13 @@ class StopOnNoChange(StopCondition):
 
 
 class Or(StopCondition):
-    def __init__(self, *criteria):
+    def __init__(self, *criteria: "StopCondition"):
         self.criteria = criteria
 
     def __str__(self):
         return " or ".join([str(c) for c in self.criteria])
 
-    def is_stop(self, train_object):
+    def is_stop(self, train_object: "TrainObject"):
         for c in self.criteria:
             if c.is_stop(train_object):
                 return True
@@ -91,13 +97,13 @@ class Or(StopCondition):
 
 
 class And(StopCondition):
-    def __init__(self, *criteria):
+    def __init__(self, *criteria: "StopCondition"):
         self.criteria = criteria
 
     def __str__(self):
         return " and ".join([str(c) for c in self.criteria])
 
-    def is_stop(self, train_object):
+    def is_stop(self, train_object: "TrainObject"):
         for c in self.criteria:
             if not c.is_stop(train_object):
                 return False
@@ -105,16 +111,16 @@ class And(StopCondition):
 
 
 class Threshold(StopCondition):
-    def __init__(self, attribute, max, duration=1):
+    def __init__(self, attribute: str, maximum, duration=1):
         self.attribute = attribute
-        self.max = max
+        self.max = maximum
         self.no_data = 0
         self.duration = duration
 
     def __str__(self):
         return "until {} reaches {}".format(self.attribute, self.max)
 
-    def is_stop(self, train_object):
+    def is_stop(self, train_object: "TrainObject"):
         data = train_object.logger.get_attribute(self.attribute)
         if len(data) == 0:
             self.no_data += 1

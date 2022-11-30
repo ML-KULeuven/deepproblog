@@ -1,10 +1,12 @@
 from unittest import TestCase
 
 from deepproblog.engines.prolog_engine import PrologEngine
-from deepproblog.heuristics import ucs
+from deepproblog.engines.prolog_engine.heuristics import PartialProbability
 from problog import get_evaluatable
 from problog.logic import Term, Constant, Var, Clause
 from problog.program import PrologString
+
+ucs = PartialProbability()
 
 
 class TestSWIProgram(TestCase):

@@ -1,14 +1,20 @@
-import torch
+from typing import Callable, TYPE_CHECKING
 
+import torch
 from problog.logic import Term, Constant, is_list, term2list
 
+from deepproblog.engines import Engine
 
-def embed(engine, term):
+if TYPE_CHECKING:
+    from deepproblog.model import Model
+
+
+def embed(engine: Engine, term: Term):
     embedding = engine.model.get_embedding(term)[0, :]
     return Term("tensor", Constant(engine.tensor_store.store(embedding)))
 
 
-def to_tensor(model, a):
+def to_tensor(model: "Model", a):
     if type(a) is Term:
         if is_list(a):
             a = term2list(a)
@@ -23,7 +29,7 @@ def to_tensor(model, a):
         return float(a)
 
 
-def tensor_wrapper(engine, func, *args):
+def tensor_wrapper(engine: Engine, func: Callable, *args):
     model = engine.model
     inputs = [to_tensor(model, a) for a in args]
     out = func(*inputs)
@@ -76,7 +82,7 @@ def stack(tensors):
     return torch.stack(tensors)
 
 
-def register_tensor_predicates(engine):
+def register_tensor_predicates(engine: Engine):
     engine.register_foreign(lambda *x: embed(engine, *x), "embed", 1, 1)
     engine.register_foreign(lambda *x: tensor_wrapper(engine, rbf, *x), "rbf", 2, 1)
     engine.register_foreign(lambda *x: tensor_wrapper(engine, add, *x), "add", 2, 1)

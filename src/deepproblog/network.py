@@ -14,6 +14,8 @@ def get_tensor_function(network: Network):
 
 
 class Network(object):
+    """Wraps a PyTorch neural network for use with DeepProblog"""
+
     def __init__(
         self,
         network_module: torch.nn.Module,
@@ -23,7 +25,7 @@ class Network(object):
         k: Optional[int] = None,
         batching: bool = False,
     ):
-        """
+        """Create a Network object
 
         :param network_module: The neural network module.
         :param name: The name of the network as used in the neural predicate nn(name, ...)
@@ -31,7 +33,7 @@ class Network(object):
         :param scheduler: An optional learn rate scheduler for the optimizer.
         :param k: If k is set, only the top k results of the neural network will be used.
         :param batching: If batching is true, the inputs will be stacked and evaluated in the network in a batch.
-        Otherwise, they are evaluated one by one.
+                         Otherwise, they are evaluated one by one.
         """
         self.network_module = network_module
         self.name = name

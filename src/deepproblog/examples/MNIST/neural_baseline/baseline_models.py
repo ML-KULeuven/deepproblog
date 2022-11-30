@@ -65,8 +65,9 @@ class Separate_Baseline_Multi(nn.Module):
         imgs1 = [self.encoder(x) for x in imgs1]
         imgs2 = [self.encoder(x) for x in imgs2]
         x1, x2 = torch.cat(imgs1, 2), torch.cat(imgs2, 2)
-        x1, x2 = x1.view(-1, 16 * 4 * 4 * self.n // 2), x2.view(
-            -1, 16 * 4 * 4 * self.n // 2
+        x1, x2 = (
+            x1.view(-1, 16 * 4 * 4 * self.n // 2),
+            x2.view(-1, 16 * 4 * 4 * self.n // 2),
         )
         x1, x2 = self.classifier(x1), self.classifier(x2)
         x = torch.cat([x1, x2], 1)

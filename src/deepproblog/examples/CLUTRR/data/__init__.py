@@ -8,6 +8,7 @@ from re import match
 import torch
 from torch.utils.data import Dataset as PyDataset
 
+from typing import Union
 from deepproblog.dataset import Dataset
 from deepproblog.query import Query
 from problog.logic import Term, Constant, list2term
@@ -131,7 +132,7 @@ class Story(object):
             except IndexError:
                 self.edges = {}
 
-            self.query = tuple(l.strip("'").lower() for l in query[1:-1].split(", "))
+            self.query = tuple(line.strip("'").lower() for line in query[1:-1].split(", "))
             answer = parse_relation(answer)
             if answer not in labels:
                 raise Exception(answer + " not in labels")
@@ -153,20 +154,6 @@ class Story(object):
                     self.text[i] = self.text[i].lower()
                     word = self.text[i].lower()
                     vocab[word] += 1
-
-    # def tokenize(self, vocab):
-    #     tokenized = []
-    #     indices = defaultdict(list)
-    #     for i, word in enumerate(self.text):
-    #         if type(word) is int:
-    #             tokenized.append(0)
-    #             indices[word].append(i)
-    #         else:
-    #             try:
-    #                 tokenized.append(vocab[word])
-    #             except KeyError:
-    #                 tokenized.append(1)
-    #     return tokenized, indices
 
     def get_sentences(self):
         sentences = [[]]
@@ -196,9 +183,9 @@ class Story(object):
         ]
         negative_labels = choices(possible_corruptions, k=nr_negatives)
         negatives = []
-        for l in negative_labels:
+        for label in negative_labels:
             copy = Story(copy=self)
-            copy.answer = l
+            copy.answer = label
             copy.positive = False
             negatives.append(copy)
         return negatives
@@ -207,10 +194,10 @@ class Story(object):
         self.answer = remove_gender(self.answer)
         self.edges = {k: remove_gender(self.edges[k]) for k in self.edges}
 
-    def to_query(self, type):
-        if type == "split":
+    def to_query(self, query_type):
+        if query_type == "split":
             return self.to_query_split()
-        elif type == "edges":
+        elif query_type == "edges":
             return self.to_query_edges()
         else:
             return self.to_query_whole()
@@ -223,15 +210,14 @@ class Story(object):
 
     def to_query_edges(self):
         entities = [Constant(x) for x in sorted(self.entities.values())]
-        # substitution = dict()
-        x, y = Constant(self.entities[self.query[0]]), Constant(
-            self.entities[self.query[1]]
+        x, y = (
+            Constant(self.entities[self.query[0]]),
+            Constant(self.entities[self.query[1]]),
         )
 
         edges = [
             Term(self.edges[e], Constant(e[0]), Constant(e[1])) for e in self.edges
         ]
-        # edges = [Term('rel', Constant(e[0]), Term(self.edges[e]), Constant(e[1])) for e in self.edges]
 
         query_term = Term(
             "clutrr_edges",
@@ -246,8 +232,9 @@ class Story(object):
     def to_query_whole(self):
         entities = [Constant(x) for x in sorted(self.entities.values())]
         substitution = dict()
-        x, y = Constant(self.entities[self.query[0]]), Constant(
-            self.entities[self.query[1]]
+        x, y = (
+            Constant(self.entities[self.query[0]]),
+            Constant(self.entities[self.query[1]]),
         )
         substitution[Term("text")] = Constant(
             '"' + " ".join(str(w) for w in self.text) + '"'
@@ -263,11 +250,11 @@ class Story(object):
 
     def to_query_split(self):
         entities = [Constant(x) for x in sorted(self.entities.values())]
-        x, y = Constant(self.entities[self.query[0]]), Constant(
-            self.entities[self.query[1]]
+        x, y = (
+            Constant(self.entities[self.query[0]]),
+            Constant(self.entities[self.query[1]]),
         )
         sentences = []
-        # sentences = [Constant('"' + ' '.join(s[1]) + '"') for s in self.get_sentences()]
         for e, s in self.get_sentences():
             e = list2term([Constant(x) for x in e])
             s = Constant(" ".join(s))
@@ -282,25 +269,12 @@ class Story(object):
         )
         return Query(query_term, output_ind=[-2], p=float(self.positive))
 
-    # def to_query_split(self):
-    #     sentences = []
-    #     entities = [Constant(x) for x in sorted(self.entities.values())]
-    #     substitution = dict()
-    #     x, y = Constant(self.entities[self.query[0]]), Constant(self.entities[self.query[1]])
-    #     for e, s in self.get_sentences():
-    #         e = list2term([Constant(x) for x in e])
-    #         s = Constant('"' + ' '.join(s) + '"')
-    #         substitution[Term('s_{}'.format(len(sentences)))] = s
-    #         sentences.append(Term('s', e, Term('s_{}'.format(len(sentences)))))
-    #     query_term = Term('query_rel', list2term([list2term(entities)] + sentences), x, Term(self.answer), y)
-    #     return Query(query_term, substitution, output_ind=[-2], p=float(self.positive))
-
 
 class CLUTRR_Dataset(Dataset):
-    def __init__(self, name, stories, vocab, gender, type, nr_negatives=0):
+    def __init__(self, name, stories, vocab, gender, query_type, nr_negatives=0):
         self.gender = gender
         self.name = name
-        self.type = type
+        self.type = query_type
         self.vocab = vocab
         negatives = []
         for story in stories:
@@ -323,9 +297,6 @@ class CLUTRR_Dataset(Dataset):
     def __repr__(self):
         return dataset_names[self.name]
 
-    # def tokenize(self, i):
-    #     return self.stories[i].tokenize(self.vocab)
-
 
 class CLUTRR(object):
     def __init__(self, name):
@@ -338,9 +309,9 @@ class CLUTRR(object):
         for subset in self.subsets:
             self.load_file(subset)
         self.vocab = (
-            ["ENT{}".format(x) for x in range(10)]
-            + ["ENT", "OOV"]
-            + sorted(self.vocab, key=lambda x: self.vocab[x], reverse=True)
+                ["ENT{}".format(x) for x in range(10)]
+                + ["ENT", "OOV"]
+                + sorted(self.vocab, key=lambda x: self.vocab[x], reverse=True)
         )
 
     def load_file(self, filename):
@@ -360,8 +331,8 @@ class CLUTRR(object):
         with open(path) as f:
             self.vocab = [word.rstrip("\n") for word in f]
 
-    def get_embeddings(self, path="glove.6B.50d.txt", N=50):
-        weights = torch.empty((len(self.vocab), N))
+    def get_embeddings(self, path="glove.6B.50d.txt", n=50):
+        weights = torch.empty((len(self.vocab), n))
         weights.normal_(0, 1)
         vocab = self.get_vocabulary()
         with open(path) as f:
@@ -375,7 +346,7 @@ class CLUTRR(object):
                     pass
         return weights
 
-    def get_dataset(self, pattern, separate=False, **kwargs):
+    def get_dataset(self, pattern, separate=False, **kwargs) -> Union[dict[CLUTRR_Dataset], CLUTRR_Dataset]:
         if separate:
             datasets = dict()
             for k in self.data:

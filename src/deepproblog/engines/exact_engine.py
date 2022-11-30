@@ -1,8 +1,7 @@
+from typing import List, Union
+
 import torch
 from numpy.random import choice
-from typing import List, Union
-from deepproblog.engines.engine import Engine
-from deepproblog.network import Network
 from problog.engine import DefaultEngine
 from problog.extern import problog_export
 from problog.logic import (
@@ -17,6 +16,9 @@ from problog.logic import (
     list2term,
 )
 from problog.program import SimpleProgram
+
+from deepproblog.engines.engine import Engine
+from deepproblog.network import Network
 
 # EXTERN = '{}_extern_'
 EXTERN = "{}_extern_nocache_"
@@ -83,7 +85,6 @@ def get_det_predicate(net: Network, engine: Engine):
         tensor_name = Term("nn", Term(net.name), arguments)
         # FIXME named tensor outputs for lists
         return wrap_tensor(output, engine.tensor_store, name=tensor_name)
-
 
     return det_predicate
 

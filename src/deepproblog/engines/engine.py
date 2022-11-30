@@ -1,11 +1,12 @@
 from typing import TYPE_CHECKING, Sequence
 
-from deepproblog.query import Query
-from deepproblog.tensor import TensorStore
+import torch
 from problog.formula import LogicFormula
 from problog.logic import Term, Constant
 from problog.program import LogicProgram
-import torch
+
+from deepproblog.query import Query
+from deepproblog.tensor import TensorStore
 
 if TYPE_CHECKING:
     from deepproblog.model import Model

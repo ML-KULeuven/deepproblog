@@ -1,7 +1,6 @@
 import pytest
 
 from deepproblog.engines import ExactEngine, ApproximateEngine
-from deepproblog.heuristics import geometric_mean
 from deepproblog.model import Model
 from deepproblog.query import Query
 from deepproblog.utils import parse
@@ -19,7 +18,7 @@ equal(X,X).
 @pytest.fixture(
     params=[
         {
-            "engine_factory": lambda model: ApproximateEngine(model, 2, geometric_mean),
+            "engine_factory": lambda model: ApproximateEngine(model, 2, ApproximateEngine.geometric_mean),
             "cache": False,
         },
         {"engine_factory": lambda model: ExactEngine(model), "cache": False},
