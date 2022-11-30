@@ -14,19 +14,37 @@ DeepProbLog can easily be installed using the following command:
 ## Test
 To make sure your installation works, install pytest `pip install pytest`, and run `pytest .` inside of the deepproblog directory.
 
+## Troubleshooting
+In some cases, the installation of PySDD can fail, as indicated by the following error:
+```
+problog.errors.InstallError: The SDD library is not available. Please install the PySDD package.
+```
+To fix this, reinstall PySDD from source:
+```
+pip uninstall pysdd
+pip install git+https://github.com/wannesm/PySDD.git#egg=PySDD
+```
+
 ## Requirements
 
 DeepProbLog has the following requirements:
 * Python > 3.9
 * [ProbLog](https://dtai.cs.kuleuven.be/problog/)
 * [PySDD](https://pysdd.readthedocs.io/en/latest/)
-    - Use `pip3 install git+https://github.com/wannesm/PySDD.git#egg=PySDD`
+    - Use `pip install git+https://github.com/wannesm/PySDD.git#egg=PySDD`
 * [PyTorch](https://pytorch.org/)
 * [TorchVision](https://pytorch.org/vision/stable/index.html)
-* [PySwip](https://github.com/ML-KULeuven/pyswip) (Optional: needed for approximate inference)
+
+## Approximate Inference
+To use Approximate Inference, we have the followign additional requirements
+* [PySwip](https://github.com/ML-KULeuven/pyswip) 
     - Use `pip3 install git+https://github.com/ML-KULeuven/pyswip`
-
-
+* [SWI-Prolog < 9.0.0](https://www.swi-prolog.org/)
+The latter can be installed on Ubuntu with the following commands:
+```
+sudo apt-add-repository ppa:swi-prolog/stable
+sudo apt install swi-prolog=8.4* swi-prolog-nox=8.4* swi-prolog-x=8.4*
+```
 ## Experiments
 
 The experiments are presented in the papers are available in the [src/deepproblog/examples](src/deepproblog/examples) directory.
