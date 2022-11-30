@@ -7,7 +7,7 @@ readme = (Path(__file__).parent / 'README.md').read_text()
 
 setup(
     name="deepproblog",
-    version="2.0.1",
+    version="2.0.2",
     description="DeepProbLog: Problog with neural networks",
     long_description=readme,
     long_description_content_type='text/markdown',
