@@ -10,7 +10,7 @@ For more information, consult the papers listed below.
 ## Requirements
 
 DeepProbLog has the following requirements:
-
+* Python > 3.9
 * [ProbLog](https://dtai.cs.kuleuven.be/problog/)
 * [PySDD](https://pysdd.readthedocs.io/en/latest/)
     - Use `pip3 install git+https://github.com/wannesm/PySDD.git#egg=PySDD`
