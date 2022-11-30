@@ -120,7 +120,7 @@ a(T,Out) :- evaluate(T, Out).
 
 def test_foreign_text():
     program = """
-a(Text,I,Word) :- writeq(a(Text,I)), ith_word(Text,I,Word).
+a(Text,I,Word) :- ith_word(Text,I,Word).
     """
 
     def ith_word(text, i):
