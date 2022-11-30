@@ -6,6 +6,11 @@ that integrates Probabilistic Logic Programming with deep learning by introducin
 The neural predicate represents probabilistic facts whose probabilites are parameterized by neural networks.
 For more information, consult the papers listed below.
 
+## Installation
+DeepProbLog can easily be installed using the following command:
+
+`pip install git+https://github.com/ML-Kuleuven/deepproblog.git`
+
 
 ## Requirements
 
