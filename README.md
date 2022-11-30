@@ -11,6 +11,8 @@ DeepProbLog can easily be installed using the following command:
 
 `pip install git+https://github.com/ML-Kuleuven/deepproblog.git`
 
+## Test
+To make sure your installation works, install pytest `pip install pytest`, and run `pytest .` inside of the deepproblog directory.
 
 ## Requirements
 
