@@ -1,9 +1,8 @@
-numpy
-problog
-pyswip
-torchvision
+numpy~=1.21.2
+problog~=2.2.2
+pyswip~=0.2.11
+torchvision~=0.12.0
+pillow~=9.0.1
+pytest~=7.1.1
+setuptools~=58.0.4
 torch
-pillow
-pysdd
-pytest
-setuptools
