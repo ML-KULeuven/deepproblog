@@ -1,7 +1,10 @@
 from unittest import TestCase
 
-from deepproblog.engines.prolog_engine import PrologEngine
-from deepproblog.engines.prolog_engine.heuristics import PartialProbability
+import pytest
+prolog_engine = pytest.importorskip("deepproblog.engines.prolog_engin")
+
+from prolog_engine import PrologEngine
+from prolog_engine.heuristics import PartialProbability
 from problog import get_evaluatable
 from problog.logic import Term, Constant, Var, Clause
 from problog.program import PrologString

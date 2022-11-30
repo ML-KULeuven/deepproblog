@@ -29,17 +29,20 @@ dummy_net3 = Network(DummyNet(dummy_values3), "dummy3")
 @pytest.fixture(
     params=[
         {
+            "name": "approximate",
             "engine_factory": lambda model: ApproximateEngine(
                 model, 10, ApproximateEngine.geometric_mean
             ),
             "cache": False,
         },
-        {"engine_factory": lambda model: ExactEngine(model), "cache": False},
-        {"engine_factory": lambda model: ExactEngine(model), "cache": True},
+        {"name": "no_cache", "engine_factory": lambda model: ExactEngine(model), "cache": False},
+        {"name": "cache", "engine_factory": lambda model: ExactEngine(model), "cache": True},
     ]
 )
 def model(request) -> Model:
     """Simple fixture creating both the approximate and the exact engine"""
+    if ApproximateEngine is None and request.param["name"] == "approximate":
+        pytest.skip("ApproximateEngine is not available as PySWIP is not installed")
     model = Model(program, [dummy_net1, dummy_net2, dummy_net3], load=False)
     engine = request.param["engine_factory"](model)
     model.set_engine(engine, cache=request.param["cache"])

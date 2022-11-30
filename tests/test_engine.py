@@ -1,5 +1,10 @@
 import pytest
 from deepproblog.engines import ApproximateEngine
+
+import pytest
+if ApproximateEngine is None:
+    pytest.skip('Approximate Inference is not available as PySDD is not installed', allow_module_level=True)
+
 from deepproblog.model import Model
 from deepproblog.query import Query
 from problog.logic import Term, Constant, Var

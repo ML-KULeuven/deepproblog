@@ -1,11 +1,16 @@
 #! /usr/bin/env python
 
 from setuptools import setup, find_packages
+from pathlib import Path
+
+readme = (Path(__file__).parent / 'README.md').read_text()
 
 setup(
     name="deepproblog",
-    version="2.0.0",
+    version="2.0.1",
     description="DeepProbLog: Problog with neural networks",
+    long_description=readme,
+    long_description_content_type='text/markdown',
     url="https://github.com/ML-KULeuven/deepproblog",
     author="DeepProbLog team",
     author_email="robin.manhaeve@cs.kuleuven.be",
@@ -23,12 +28,12 @@ setup(
     packages=find_packages(where="src"),
     zip_safe=False,
     include_package_data=True,
-    install_requires=["pysdd @ git+https://github.com/wannesm/PySDD.git#egg=PySDD",
+    install_requires=["pysdd",
                       "problog",
                       "torch",
-                      "torchvision",
-                      "pyswip @ git+https://github.com/ML-KULeuven/pyswip.git#egg=pyswip"],
+                      "torchvision"],
     extras_require={
+        "approximate": ["pyswip @ git+https://github.com/ML-KULeuven/pyswip.git#egg=pyswip"],
         "examples": ["Pillow"],
         "tests": ["pytest"],
     },
