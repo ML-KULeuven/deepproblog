@@ -16,7 +16,7 @@ DeepProbLog has the following requirements:
     - Use `pip3 install git+https://github.com/wannesm/PySDD.git#egg=PySDD`
 * [PyTorch](https://pytorch.org/)
 * [TorchVision](https://pytorch.org/vision/stable/index.html)
-* [PySwip](https://github.com/ML-KULeuven/pyswip)
+* [PySwip](https://github.com/ML-KULeuven/pyswip) (Optional: needed for approximate inference)
     - Use `pip3 install git+https://github.com/ML-KULeuven/pyswip`
 
 
