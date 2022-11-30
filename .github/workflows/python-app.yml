@@ -20,7 +20,7 @@ jobs:
       run: |
         sudo apt-add-repository ppa:swi-prolog/stable -y
         sudo apt-get update
-        sudo apt-get install swi-prolog=8.4.1 -y
+        sudo apt-get install swi-prolog=8.4.1-3-g822f6bcf5-hirsuteppa2  -y
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
