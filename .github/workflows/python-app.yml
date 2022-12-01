@@ -34,4 +34,4 @@ jobs:
         pip install .
     - name: Test with pytest
       run: |
-        pytest tests/
+        python -m deepproblog test
