@@ -8,6 +8,11 @@ For more information, consult the papers listed below.
 
 ## Installation
 DeepProbLog can easily be installed using the following command:
+Make sure the following packages are installed:
+```
+sudo apt install libpython3-dev python3-dev
+```
+Then you can install DeeppProblog using pip
 ```
 pip install deepproblog
 ```
