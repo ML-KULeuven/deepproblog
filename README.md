@@ -14,7 +14,7 @@ sudo apt install libpython3-dev python3-dev
 ```
 Then you can install DeeppProblog using pip
 ```
-pip install deepproblog
+pip install git+https://github.com/ML-KULeuven/deepproblog
 ```
 
 ## Test
