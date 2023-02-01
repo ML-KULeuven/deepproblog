@@ -10,11 +10,7 @@ For more information, consult the papers listed below.
 DeepProbLog can easily be installed using the following command:
 Make sure the following packages are installed:
 ```
-sudo apt install libpython3-dev python3-dev
-```
-Then you can install DeeppProblog using pip
-```
-pip install git+https://github.com/ML-KULeuven/deepproblog
+pip install deepproblog
 ```
 
 ## Test
@@ -26,16 +22,6 @@ and run
 ```
 python -m deepproblog test
 ```
-## Troubleshooting
-In some cases, the installation of PySDD can fail, as indicated by the following error:
-```
-problog.errors.InstallError: The SDD library is not available. Please install the PySDD package.
-```
-To fix this, reinstall PySDD from source:
-```
-pip uninstall pysdd
-pip install git+https://github.com/wannesm/PySDD.git#egg=PySDD
-```
 
 ## Requirements
 
@@ -43,14 +29,13 @@ DeepProbLog has the following requirements:
 * Python > 3.9
 * [ProbLog](https://dtai.cs.kuleuven.be/problog/)
 * [PySDD](https://pysdd.readthedocs.io/en/latest/)
-    - Use `pip install git+https://github.com/wannesm/PySDD.git#egg=PySDD`
 * [PyTorch](https://pytorch.org/)
 * [TorchVision](https://pytorch.org/vision/stable/index.html)
 
 ## Approximate Inference
 To use Approximate Inference, we have the followign additional requirements
 * [PySwip](https://github.com/ML-KULeuven/pyswip) 
-    - Use `pip3 install git+https://github.com/ML-KULeuven/pyswip`
+    - Use `pip install git+https://github.com/ML-KULeuven/pyswip`
 * [SWI-Prolog < 9.0.0](https://www.swi-prolog.org/)
 The latter can be installed on Ubuntu with the following commands:
 ```
@@ -69,7 +54,7 @@ The experiments are presented in the papers are available in the [src/deepproblo
 3. Robin Manhaeve, Giuseppe Marra, Luc De Raedt:
 *Approximate Inference for Neural Probabilistic Logic Programming*. KR 2021
 ## License
-Copyright 2021 KU Leuven, DTAI Research Group
+Copyright 2023 KU Leuven, DTAI Research Group
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
