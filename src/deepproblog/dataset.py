@@ -87,7 +87,7 @@ class Dataset(ABC):
             yield self[i]
 
     def __getitem__(self, index):
-        raise NotImplementedError()
+        pass
 
 
 class DataLoader(object):
