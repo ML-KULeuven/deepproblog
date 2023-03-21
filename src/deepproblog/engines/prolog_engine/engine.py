@@ -47,7 +47,8 @@ class PrologEngine(GenericEngine):
         self.timeout = timeout
         self.ignore_timeout = ignore_timeout
         self.exploration = exploration
-        self.prolog.consult(str(root / "prolog_files" / "engine_heap.pl"))
+        path = root / "prolog_files" / "engine_heap.pl"
+        self.prolog.consult(path.as_posix())
 
     def prepare(self, db):
         program = SWIProgram(db, heuristic=self.heuristic)

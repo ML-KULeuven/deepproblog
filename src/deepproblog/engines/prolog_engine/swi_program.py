@@ -322,7 +322,7 @@ class SWIProgram(ProbLogObject):
                 for k in r:
                     v = result[0][k]
                     if type(v) is list:
-                        if isinstance(v[0], str):
+                        if len(v) > 1 and isinstance(v[0], str):
                             raise TypeError("Oops, it appears you are using the wrong version of PySwip.\n"
                                             "Please make sure you are using PySwip from https://github.com/ML-KULeuven/pyswip\n"
                                             "To install, first remove your current PySwip version, then install the correct version.\n"
