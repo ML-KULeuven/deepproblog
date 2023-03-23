@@ -258,3 +258,6 @@ src/deepproblog/examples/Poker/data/images/
 src/deepproblog/examples/Smokers/data/
 src/deepproblog/examples/Successor/data/MNIST/
 /venv/
+/build/
+/dist/
+*.whl
