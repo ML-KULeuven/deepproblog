@@ -46,13 +46,13 @@ class ApproximateEngine(Engine):
     ucs = PartialProbability()
 
     def __init__(
-        self,
-        model,
-        k,
-        heuristic: Heuristic,
-        exploration=False,
-        timeout=None,
-        ignore_timeout=False,
+            self,
+            model,
+            k,
+            heuristic: Heuristic,
+            exploration=False,
+            timeout=None,
+            ignore_timeout=False,
     ):
         Engine.__init__(self, model)
         self.heuristic = heuristic
@@ -81,7 +81,7 @@ class ApproximateEngine(Engine):
                         heads = []
                         self.model.networks[str(net)].domain = term2list(domain, False)
                         for domain_n, domain_element in enumerate(
-                            term2list(domain, False)
+                                term2list(domain, False)
                         ):
                             head = e.with_probability(
                                 p.with_args(net, inputs, Constant(domain_n))
@@ -229,6 +229,10 @@ class ApproximateEngine(Engine):
                 "assertz(allowed_builtin({}))".format(builtin_name)
             )
         )
+
+    def register_foreign_nondet(self, func, function_name, arity_in, arity_out):
+        #TODO Implement
+        pass
 
     def get_hyperparameters(self) -> dict:
         parameters = {

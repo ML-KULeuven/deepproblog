@@ -3,7 +3,7 @@ from typing import List, Union
 import torch
 from numpy.random import choice
 from problog.engine import DefaultEngine
-from problog.extern import problog_export
+from problog.extern import problog_export, problog_export_nondet
 from problog.logic import (
     Term,
     AnnotatedDisjunction,
@@ -206,6 +206,11 @@ class ExactEngine(Engine):
         signature = ["+term"] * arity_in + ["-term"] * arity_out
         problog_export.database = self.model.solver.program
         problog_export(*signature)(func, funcname=function_name, modname=None)
+
+    def register_foreign_nondet(self, func, function_name, arity_in, arity_out):
+        signature = ["+term"] * arity_in + ["-term"] * arity_out
+        problog_export.database = self.model.solver.program
+        problog_export_nondet(*signature)(func, funcname=function_name, modname=None)
 
     def get_hyperparameters(self) -> dict:
         return {"type": "ExactEngine"}

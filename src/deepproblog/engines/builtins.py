@@ -36,6 +36,13 @@ def tensor_wrapper(engine: Engine, func: Callable, *args):
     return model.store_tensor(out)
 
 
+def tensor_wrapper_nondet(engine: Engine, func: Callable, *args):
+    model = engine.model
+    inputs = [to_tensor(model, a) for a in args]
+    out = func(*inputs)
+    return out
+
+
 def rbf(x, y):
     return torch.exp(-torch.norm(x - y, 2))
 
@@ -82,6 +89,20 @@ def stack(tensors):
     return torch.stack(tensors)
 
 
+def list_to_tensor(list_term):
+    return torch.tensor(list_term)
+
+
+def tensor_index(tensor, index):
+    index = [int(x) for x in index]
+    return tensor[index]
+
+
+def less_than(tensor1, tensor2):
+    if tensor1 < tensor2:
+        return [()]
+    return []
+
 def register_tensor_predicates(engine: Engine):
     engine.register_foreign(lambda *x: embed(engine, *x), "embed", 1, 1)
     engine.register_foreign(lambda *x: tensor_wrapper(engine, rbf, *x), "rbf", 2, 1)
@@ -98,3 +119,6 @@ def register_tensor_predicates(engine: Engine):
     engine.register_foreign(
         lambda *x: tensor_wrapper(engine, one_hot, *x), "one_hot", 2, 1
     )
+    engine.register_foreign(lambda *x: tensor_wrapper(engine, list_to_tensor, *x), "list_to_tensor", 1, 1)
+    engine.register_foreign(lambda *x: tensor_wrapper(engine, tensor_index, *x), "tensor_index", 2, 1)
+    engine.register_foreign_nondet(lambda *x: tensor_wrapper_nondet(engine, less_than, *x), "less_than", 2, 0)
