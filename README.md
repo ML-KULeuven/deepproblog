@@ -33,7 +33,8 @@ DeepProbLog has the following requirements:
 * [TorchVision](https://pytorch.org/vision/stable/index.html)
 
 ## Approximate Inference
-To use Approximate Inference, we have the followign additional requirements
+
+To use Approximate Inference, we have the following additional requirements
 * [PySwip](https://github.com/ML-KULeuven/pyswip) 
     - Use `pip install git+https://github.com/ML-KULeuven/pyswip`
 * [SWI-Prolog < 9.0.0](https://www.swi-prolog.org/)
