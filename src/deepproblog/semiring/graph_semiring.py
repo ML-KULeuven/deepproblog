@@ -113,9 +113,9 @@ class GraphSemiring(Semiring):
             )
         else:
             if target == 1.0:
-                loss = -torch.log(p) * weight
+                loss = -torch.log(p + eps) * weight
             elif target == 0.0:
-                loss = -torch.log(1.0 - p) * weight
+                loss = -torch.log(1.0 - p + eps) * weight
             else:
                 loss = (
                     -(
