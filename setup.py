@@ -7,7 +7,7 @@ readme = (Path(__file__).parent / 'README.md').read_text()
 
 setup(
     name="deepproblog",
-    version="2.0.4",
+    version="2.0.5",
     description="DeepProbLog: Problog with neural networks",
     long_description=readme,
     long_description_content_type='text/markdown',
@@ -33,7 +33,7 @@ setup(
                       "torch",
                       "torchvision"],
     extras_require={
-        "approximate": ["pyswip @ git+https://github.com/ML-KULeuven/pyswip.git#egg=pyswip"],
+#        "approximate": ["pyswip @ git+https://github.com/ML-KULeuven/pyswip.git#egg=pyswip"],
         "examples": ["Pillow"],
         "tests": ["pytest"],
     },
