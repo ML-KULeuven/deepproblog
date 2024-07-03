@@ -32,13 +32,28 @@ model_urls = {
 
 
 class DummyNet(nn.Module):
-    def __init__(self, values: Dict[Term, Union[list, torch.Tensor]]):
+    def __init__(self, values: Dict[Union[Term, tuple[Term, ...]], Union[list, torch.Tensor]]):
         super().__init__()
         self.values = values
 
-    def forward(self, x):
-        output = self.values[x]
+    def forward(self, *x: Term):
+        if len(x) == 1:
+            output = self.values[x[0]]
+        else:
+            output = self.values[x]
         return torch.tensor(output, requires_grad=True)
+
+
+class DummyTensorNet(nn.Module):
+    def __init__(self, batching=False):
+        super().__init__()
+        self.batching = batching
+
+    def forward(self, *x: torch.Tensor):
+        if self.batching:
+            return torch.stack([torch.tensor(y, requires_grad=True) for y in x], dim=0)
+        else:
+            return torch.tensor(x, requires_grad=True)
 
 
 class SmallNet(nn.Module):
