@@ -18,6 +18,7 @@ cend = "\033[0m"
 cgreen = "\033[92m"
 
 
+
 def log_exists(location: Union[str, os.PathLike], name: str):
     return Path(location).glob(name + "*")
 

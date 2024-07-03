@@ -1,12 +1,11 @@
-from typing import TYPE_CHECKING, Sequence
+from time import time
+from typing import TYPE_CHECKING, Iterable
 
-import torch
 from problog.formula import LogicFormula
-from problog.logic import Term, Constant
-from problog.program import LogicProgram
 
-from deepproblog.query import Query
-from deepproblog.tensor import TensorStore
+from ..arithmetic_circuit import ArithmeticCircuit
+from ..query import Query
+from ..utils.cache import DictCache, FileCache
 
 if TYPE_CHECKING:
     from deepproblog.model import Model
@@ -14,36 +13,55 @@ if TYPE_CHECKING:
 
 class Engine(object):
     """
-    An asbtract engine base class.
+    An abstract engine base class.
     """
 
-    def __init__(self, model: "Model"):
+    def __init__(
+        self, model: "Model", cache_memory: bool = False, cache_root: str = None
+    ):
         """
 
         :param model: The model that this engine will solve queries for.
         """
         self.model = model
-        self.tensor_store = TensorStore()
 
-    def perform_count(self, queries: Sequence[Query], acs):
-        pass
+        def key_func(x):
+            return str(x.query)
 
-    def prepare(self, program: LogicProgram) -> LogicProgram:
-        """
-        Modifies the given program to a format suited for querying in this engine.
-        :param program: The program to be modified
-        :return: The modified program
-        """
-        raise NotImplementedError("prepare is an abstract method")
+        self.ac_builder = self.build_ac
+        if cache_root is not None:
+            self.ac_builder = FileCache(self.ac_builder, cache_root, key_func)
+        if cache_memory:
+            self.ac_builder = DictCache(self.ac_builder, key_func)
 
-    def ground(self, query: Query, **kwargs) -> LogicFormula:
+    def ground(self, query: Query) -> LogicFormula:
         """
 
         :param query: The query to ground.
-        :param kwargs:
         :return: A logic formula representing the ground program.
         """
         raise NotImplementedError("ground is an abstract method")
+
+    def query(self, query: Query) -> ArithmeticCircuit:
+        return self.ac_builder(query)
+
+    def query_batch(self, batch: Iterable[Query]) -> Iterable[ArithmeticCircuit]:
+        for query in batch:
+            yield self.query(query)
+
+    def build_ac(self, query: Query) -> ArithmeticCircuit:
+        """
+        Builds the arithmetic circuit.
+        :param query: The query for which to build the arithmetic circuit.
+        :return: The arithmetic circuit for the given query.
+        """
+        ground = self.ground(query)
+        ac = ArithmeticCircuit(
+            ground,
+            collect=query.collect,
+            name=query.query,
+        )
+        return ac
 
     def register_foreign(
         self, func: callable, function_name: str, arity_in: int, arity_out: int
@@ -58,44 +76,5 @@ class Engine(object):
         """
         raise NotImplementedError("register_foreign is an abstract method")
 
-    def register_foreign_nondet(
-        self, func: callable, function_name: str, arity_in: int, arity_out: int
-    ):
-        """
-        Makes a Python function available to the grounding engine.
-        :param func: The Python function to be made available.
-        :param function_name: The name of the predicate that will be used to address this function in logic.
-        :param arity_in: The number of input arguments to func
-        :param arity_out The number of return values of func
-        :return:
-        """
-        raise NotImplementedError("register_foreign_nondet is an abstract method")
-
-
-    def get_tensor(self, tensor_term: Term):
-        if tensor_term.functor == "tensor":
-            return self.tensor_store[tensor_term.args[0]]
-        if type(tensor_term) is Constant and type(tensor_term.functor) is float:
-            return torch.FloatTensor([tensor_term.functor])
-        return tensor_term
-
     def get_hyperparameters(self) -> dict:
-        raise NotImplementedError("get_hyperparameters is an abstract method")
-
-    def eval(self):
-        """
-        Set the engine to eval mode.
-        :return:
-        """
-        pass
-
-    def train(self):
-        """
-        Set th engine to train mode.
-        :return:
-        """
-        pass
-
-    @staticmethod
-    def can_cache() -> bool:
-        return False
+        return {"type": self.__class__.__name__}

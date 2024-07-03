@@ -1,6 +1,6 @@
 import pytest
 
-from deepproblog.engines import ExactEngine, ApproximateEngine
+from deepproblog.engines import Engine, ExactEngine, ApproximateEngine
 from deepproblog.model import Model
 from deepproblog.query import Query
 from deepproblog.utils import parse
@@ -14,39 +14,38 @@ equal(X,X).
 0.2 :: multiple_answers(dummy2). 
 """
 
-@pytest.fixture(
-    params=[
-        {
-            "name": "approximate",
-            "engine_factory": lambda model: ApproximateEngine(model, 2, ApproximateEngine.geometric_mean),
-            "cache": False,
-        },
-        {"name": "no_cache", "engine_factory": lambda model: ExactEngine(model), "cache": False},
-        {"name": "cache", "engine_factory": lambda model: ExactEngine(model), "cache": True},
-    ]
-)
-def model(request) -> Model:
-    if ApproximateEngine is None and request.param["name"] == "approximate":
-        pytest.skip(reason='ApproximateEngine is not available')
-    """Simple fixture creating both the approximate and the exact engine"""
-    model = Model(_simple_program, [], load=False)
-    engine = request.param["engine_factory"](model)
-    model.set_engine(engine, cache=request.param["cache"])
+
+@pytest.fixture()
+def model() -> Model:
+    """Simple fixture creating both the approximate and the engine"""
+    model = Model(_simple_program, [])
     return model
 
 
-def test_model_basics(model):
+@pytest.fixture(
+    params=[
+        #{"engine_factory": lambda model: ApproximateEngine(model, 2, ApproximateEngine.geometric_mean)},
+        {"engine_factory": lambda model: ExactEngine(model, cache_memory=True)},
+        {"engine_factory": lambda model: ExactEngine(model, cache_memory=False)},
+    ]
+)
+def engine(model, request) -> Engine:
+    return request.param["engine_factory"](model)
+
+
+def test_model_basics(model: Model, engine: Engine):
     # These should be set up after running the fixture.
-    assert model.solver is not None
     assert model.program is not None
+    assert engine.model is not None
 
 
-def test_solve(model):
+def test_solve(model: Model, engine: Engine):
     q1 = Query(parse("equal(dummy,dummy)."))
     q2 = Query(parse("equal(dummy,notequal)."))
     q3 = Query(parse("multiple_answers(X)."))
     q4 = Query(parse("a."))
-    results = model.solve([q1, q2, q3, q4])
+    acs = engine.query_batch([q1, q2, q3, q4])
+    results = [ac.evaluate(model) for ac in acs]
     assert len(results) == 4
     # Q1:
     assert len(results[0].result) == 1  # Provable

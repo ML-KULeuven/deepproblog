@@ -1,7 +1,4 @@
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from deepproblog.train import TrainObject
+from ..logger import Logger
 
 
 class StopCondition(object):
@@ -28,57 +25,50 @@ class EpochStop(StopCondition):
     def __str__(self):
         return "for {} epoch(s)".format(self.max_epoch)
 
-    def is_stop(self, train_object: "TrainObject"):
-        return train_object.epoch >= self.max_epoch
+    def is_stop(self, logger: Logger):
+        return logger.epoch >= self.max_epoch
 
 
 class StopOnPlateau(StopCondition):
-    def __init__(self, attribute: str, delta=0.01, patience=5, warm_up=5):
+    def __init__(self, attribute: str, delta=0.01, patience=5, aggregate=min):
         self.attribute = attribute
         self.delta = delta
         self.patience = patience
-        self.best = warm_up
-        self.warm_up = warm_up
+        self.aggregate = aggregate
 
     def __str__(self):
-        return "until plateau in {}".format(self.attribute)
+        return "until {} plateaus for {} epochs".format(self.attribute, self.patience)
 
-    def is_stop(self, train_object: "TrainObject"):
-        data = train_object.logger.get_attribute(self.attribute)
-        if len(data) <= self.warm_up:
+    def is_stop(self, logger: Logger):
+        if logger.epoch <= self.patience:
             return False
-        if self.best == -1 or (
-            data[-1] > data[self.best] + data[self.best] * self.delta
-        ):
-            self.best = len(data) - 1
+        old_best = self.aggregate(logger.get_attribute_per_epoch(self.attribute)[:-self.patience])
+        all_best = self.aggregate(logger.get_attribute_per_epoch(self.attribute))
 
-        if len(data) - self.best >= self.patience:
+        if abs(old_best - all_best) < self.delta:
             print("No improvement for {} steps. Stopping.".format(self.patience))
             return True
         return False
 
 
 class StopOnNoChange(StopCondition):
-    def __init__(self, attribute: str, delta=0.01, patience=5, warm_up=5):
+    def __init__(self, attribute: str, delta=0.01, patience=5):
         self.attribute = attribute
         self.delta = delta
         self.patience = patience
-        self.last_change = warm_up
-        self.warm_up = warm_up
 
     def __str__(self):
-        return "until no change in {}".format(self.attribute)
+        return "until no change in {} for {} epochs".format(self.attribute, self.patience)
 
-    def is_stop(self, train_object: "TrainObject"):
-        data = train_object.logger.get_attribute(self.attribute)
-        if len(data) <= self.warm_up:
+    def is_stop(self, logger: Logger):
+        if logger.epoch < self.patience:
             return False
-        if abs(data[-1] - data[self.last_change]) > data[self.last_change] * self.delta:
-            self.last_change = len(data) - 1
+        data = logger.get_attribute_per_epoch(self.attribute)[-self.patience:]
 
-        if len(data) - self.last_change > self.patience:
+        if (max(data) - min(data)) < self.delta:
             print("No change for {} steps. Stopping.".format(self.patience))
             return True
+
         return False
 
 
@@ -111,14 +101,18 @@ class And(StopCondition):
 
 
 class Threshold(StopCondition):
-    def __init__(self, attribute: str, maximum, duration=1):
+    def __init__(self, attribute: str, threshold, lower_bound=False, duration=1):
         self.attribute = attribute
-        self.max = maximum
+        self.threshold = threshold
+        self.lower_bound = lower_bound
         self.no_data = 0
         self.duration = duration
 
     def __str__(self):
-        return "until {} reaches {}".format(self.attribute, self.max)
+        if self.lower_bound:
+            return "until {} <= {} for {} steps".format(self.attribute, self.threshold, self.duration)
+        else:
+            return "until {} >= {} for {} steps".format(self.attribute, self.threshold, self.duration)
 
     def is_stop(self, train_object: "TrainObject"):
         data = train_object.logger.get_attribute(self.attribute)
@@ -129,6 +123,10 @@ class Threshold(StopCondition):
                 # print('Received no data about {} for {} steps'.format(self.attribute, self.no_data))
             return False
         for i in range(self.duration):
-            if data[-i - 1] < self.max:
-                return False
+            if self.lower_bound:
+                if data[-i - 1] > self.threshold:
+                    return False
+            else:
+                if data[-i - 1] < self.threshold:
+                    return False
         return True

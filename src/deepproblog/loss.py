@@ -23,13 +23,14 @@ class JSD(nn.Module):
 class InfoLoss(nn.Module):
     def __init__(self):
         super().__init__()
+        self.get_weight = lambda: 1.0
 
     def forward(self, x, eps=1e-8):
         x = torch.mean(x, 0)
         logN = math.log(float(x.shape[0]))
         x = x * (x + eps).log() / logN
         neg_entropy = x.sum()
-        return 1.0 + neg_entropy
+        return (1.0 + neg_entropy) * self.get_weight()
 
 
 class EntropyLoss(nn.Module):
@@ -46,7 +47,3 @@ class EntropyLoss(nn.Module):
 infoLoss = InfoLoss()
 entropyLoss = EntropyLoss()
 jsd = JSD()
-
-
-def MSE(p, target):
-    return (p - target) ** 2, 2 * (p - target)

@@ -1,5 +1,11 @@
+numpy
 problog
+pyswip
 torchvision
-setuptools
 torch
+pillow
 pysdd
+pytest
+setuptools
+tqdm
+scikit-learn

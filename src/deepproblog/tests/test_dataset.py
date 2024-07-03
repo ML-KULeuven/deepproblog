@@ -32,20 +32,6 @@ def test_query_dataset(tmpdir):
     assert dataset_list.to_queries() == dataset_list.queries
 
 
-def test_dataset_write_to_file(tmpdir):
-    dataset_list = QueryDataset(
-        [
-            Query(parse("a(2,3,5).")),
-            Query(parse("a(3,3,b)."), substitution={Term("b"): Constant(123)}),
-        ]
-    )
-    with tmpdir.join("queries_out.txt").open(mode="wt") as tempfile:
-        dataset_list.write_to_file(tempfile)
-    # Test that we can reload it.
-    dataset_reloaded = QueryDataset(tmpdir.join("queries_out.txt"))
-    assert dataset_reloaded.queries == dataset_list.queries
-
-
 def test_subset():
     dataset = QueryDataset(
         [

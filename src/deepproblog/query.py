@@ -1,4 +1,4 @@
-from typing import Optional, List, Sequence
+from typing import Optional, List, Sequence, Dict
 
 from problog.logic import Term, Var
 
@@ -11,9 +11,10 @@ class Query(object):
     def __init__(
         self,
         query: Term,
-        substitution: Optional[dict] = None,
+        substitution: Optional[Dict[Term, Term]] = None,
         p: float = 1.0,
         output_ind: Sequence[int] = (-1,),
+        collect=False,
     ):
         """
 
@@ -25,11 +26,12 @@ class Query(object):
         arguments. This is relevant for testing / negative mining.
         """
         self.query = query
-        self.substitution = substitution
+        self.substitution: Dict[Term, Term] = substitution
         if self.substitution is None:
             self.substitution = {}
         self.p = p
         self.output_ind = output_ind
+        self.collect = collect
 
     def variable_output(self) -> "Query":
         """
@@ -54,18 +56,33 @@ class Query(object):
             j += 1
         return Query(self.query(*new_args), self.substitution, self.p, self.output_ind)
 
-    def output_values(self) -> List[Term]:
+    def output_values(self, term: Optional[Term] = None) -> List[Term]:
         """
-
+        :param term: Optional parameter. Will get the output value of the given term instead of 'self.query'
         :return: The values of the output arguments
         """
-        return [self.query.args[i] for i in self.output_ind]
+        if term is None:
+            term = self.query
+        return [term.args[i] for i in self.output_ind]
 
-    def substitute(self, substitution: Optional[dict] = None) -> "Query":
+    def output_value(self, term: Optional[Term] = None) -> Term:
+        """
+        :param term: Optional parameter. Will get the output value of the given term instead of 'self.query'
+        :return: The value of the output arguments
+        """
+        if term is None:
+            term = self.query
+        if len(self.output_ind) != 1:
+            raise ValueError(
+                "Cannot call output_value on a query with multiple output indices."
+            )
+        return term.args[self.output_ind[0]]
+
+    def substitute(self, substitution: Optional[Dict[Term, Term]] = None) -> "Query":
         """
 
         :param substitution: The dictionary that will be used to perform the substitution.
-                             If None, then self.substitution will be used instead.
+                             If None, then 'self.substitution' will be used instead.
         :return: A new query where the substitution is applied. See the apply_term
                  method from the Term class for details on the substitution.
         """
@@ -78,23 +95,22 @@ class Query(object):
             output_ind=self.output_ind,
         )
 
+    def change_substitution(self, new_substitution: dict) -> "Query":
+        new_substitution2 = {
+            new_substitution[k]: self.substitution[k] for k in new_substitution
+        }
+        return Query(
+            self.query.apply_term(new_substitution),
+            substitution=new_substitution2,
+            p=self.p,
+            output_ind=self.output_ind,
+        )
+
     def __repr__(self):
         return "({}::{}, {})".format(self.p, self.query, self.substitution)
 
-    def to_text_query(self):
-        """Return the query on a form where QueryDataset can load it"""
-        subst = sorted(
-            ([k, v] for k, v in self.substitution.items()), key=lambda x: x[0].functor
-        )
-        return f"{self.p}::subs({self.query}, {subst})."
-
     def __hash__(self):
-        return (
-            hash(self.query)
-            ^ hash(self.substitution)
-            ^ hash(self.p)
-            ^ hash(self.output_ind)
-        )
+        return hash(self.query)
 
     def __eq__(self, other):
         if not isinstance(other, Query):
@@ -105,3 +121,20 @@ class Query(object):
             and self.p == other.p
             and self.output_ind == other.output_ind
         )
+
+    def _get_tensor_substitution(self, term: Term, substitution: dict):
+        if term.functor == "tensor":
+            if term not in substitution:
+                key = Term("arg_{}".format(len(substitution)))
+                substitution[term] = key
+        else:
+            for arg in term.args:
+                self._get_tensor_substitution(arg, substitution)
+
+    def substitute_tensors(self) -> "Query":
+        substitution = dict()
+        self._get_tensor_substitution(self.query, substitution)
+        new_term = self.query.apply_term(substitution)
+        substitution = {substitution[key]: key for key in substitution}
+        substitution.update(self.substitution)
+        return Query(new_term, substitution, self.p, self.output_ind, self.collect)

@@ -12,7 +12,11 @@ from deepproblog.query import Query
 
 
 class Dataset(ABC):
-    __slots__ = ()
+    def __init__(self) -> None:
+        super().__init__()
+        self.label_indicator_map: dict[Term, int] = dict()
+
+   # __slots__ = ()
 
     def __str__(self):
         return "\n".join(str(self.to_query(i)) for i in range(min(len(self), 5)))
@@ -49,7 +53,9 @@ class Dataset(ABC):
             i = 0
         return Subset(self, i, j)
 
-    def __add__(self, other: "Dataset") -> "Dataset":
+    def __add__(
+        self, other: "Dataset"
+    ) -> "Dataselist(test_set.labels_to_indicator(model.predict(test_set)))t":
         """
 
         :param other: The other dataset.
@@ -66,28 +72,42 @@ class Dataset(ABC):
         """
         return Fold(self, n, i, False), Fold(self, n, i, True)
 
-    def to_file_repr(self, i: int) -> str:
-        """
+    def to_prolog(self) -> str:
+        return '\n'.join(str(query.substitute().query)+'.' for query in self)
 
-        :param i: index
-        :return: Returns a string representation of file i suitable for writing to a file. Defaults to to_query.
-        """
-        return str(self.to_query(i).to_text_query())
-
-    def write_to_file(self, f: TextIO):
-        """
-
-        :param f: File to write the dataset. to
-        """
-        for i in range(len(self)):
-            f.write(self.to_file_repr(i) + "\n")
+    # def write_to_file(self, f: TextIO):
+    #     """
+    #
+    #     :param f: File to write the dataset. to
+    #     """
+    #     for i in range(len(self)):
+    #         f.write(self.to_file_repr(i) + "\n")
 
     def __iter__(self):
         for i in range(len(self)):
             yield self[i]
 
     def __getitem__(self, index):
-        pass
+        return self.to_query(index)
+
+    def get_labels(self) -> Iterable[List[Term]]:
+        for query in self:
+            yield query.output_value()
+
+    def get_label_indicators(self) -> Iterable[List[int]]:
+        for query in self:
+            yield self.label_to_indicator(query.output_value())
+
+    def labels_to_indicator(self, labels: Iterable[Term]) -> Iterable[int]:
+        for label in labels:
+            yield self.label_to_indicator(label)
+
+    def label_to_indicator(self, label: Term) -> int:
+        indicator = self.label_indicator_map.get(label)
+        if indicator is None:
+            indicator = len(self.label_indicator_map)
+            self.label_indicator_map[label] = indicator
+        return indicator
 
 
 class DataLoader(object):
@@ -175,10 +195,17 @@ class Subset(Dataset):
     def __init__(self, dataset, i, j):
         self.i = i
         self.j = min(j, len(dataset))
+        if self.i > self.j:
+            raise ValueError(
+                "Lower bound {} is larger than upper bound {}".format(i, j)
+            )
         self.dataset = dataset
 
 
 class Extension(Dataset):
+    def __getattr__(self, item):
+        return getattr(self.a, item)
+
     def __len__(self):
         return len(self.a) + len(self.b)
 
@@ -240,6 +267,22 @@ class Fold(Dataset):
         self.split = split
 
 
+class ShuffledDataset(Dataset):
+    def __getitem__(self, index):
+        return self.inner[self._indices[index]]
+
+    def __init__(self, inner: Dataset):
+        self.inner = inner
+        self._indices = list(range(len(self)))
+        random.shuffle(self._indices)
+
+    def __len__(self):
+        return len(self.inner)
+
+    def to_query(self, i: int) -> Query:
+        return self.inner.to_query(self._indices[i])
+
+
 class MutatingDataset(Dataset):
     """
     Generic dataset adapter that mutates an underlying dataset.
@@ -262,6 +305,9 @@ class MutatingDataset(Dataset):
 
     def __getitem__(self, item):
         raise NotImplementedError("__getitem__ is not implemented for MutatingDataset")
+
+    def __getattr__(self, item):
+        return getattr(self.inner_dataset, item)
 
 
 class NoiseMutatorDecorator:
@@ -389,9 +435,9 @@ class QueryDataset(Dataset):
     def to_query(self, i):
         return self.queries[i]
 
-    def __init__(self, queries: Union[List[Query], Path, str]):
+    def __init__(self, queries: Union[Iterable[Query], Path, str]):
         super().__init__()
-        if isinstance(queries, list):
-            self.queries = queries
-        else:
+        try:
             self.queries = load(queries)
+        except:
+            self.queries = list(queries)
