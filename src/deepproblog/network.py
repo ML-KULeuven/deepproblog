@@ -17,13 +17,13 @@ class Network(object):
     """Wraps a PyTorch neural network for use with DeepProblog"""
 
     def __init__(
-        self,
-        network_module: torch.nn.Module,
-        name: str,
-        optimizer: Optional[torch.optim.Optimizer] = None,
-        scheduler=None,
-        k: Optional[int] = None,
-        batching: bool = False,
+            self,
+            network_module: torch.nn.Module,
+            name: str,
+            optimizer: Optional[torch.optim.Optimizer] = None,
+            scheduler=None,
+            k: Optional[int] = None,
+            batching: bool = False,
     ):
         """Create a Network object
 
@@ -121,13 +121,17 @@ class Network(object):
         :return:
         """
         if self.batching:
-            batched_inputs: List[torch.Tensor] = [
-                self.function(*e)[0] for e in to_evaluate
-            ]
-            stacked_inputs = torch.stack(batched_inputs)
-            if self.is_cuda:
-                stacked_inputs = stacked_inputs.cuda(device=self.device)
-            evaluated = self.network_module(stacked_inputs)
+            inputs = (self.function(*e) for e in to_evaluate)
+            stacked_inputs = list()
+            for inputs in zip(*inputs):
+                try:
+                    inputs = torch.stack(inputs)
+                    if self.is_cuda:
+                        inputs.cuda(device=self.device)
+                except TypeError:
+                    inputs = list(inputs)
+                stacked_inputs.append(inputs)
+            evaluated = self.network_module(*stacked_inputs)
         else:
             evaluated = [self.network_module(*self.function(*e)) for e in to_evaluate]
         return evaluated
@@ -168,7 +172,6 @@ class Network(object):
             "k": self.k,
         }
         return parameters
-
 
 # class NetworkEvaluation(object):
 #     """
