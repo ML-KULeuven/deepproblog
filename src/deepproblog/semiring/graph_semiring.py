@@ -8,6 +8,24 @@ from deepproblog.semiring import Semiring, Result
 from problog.logic import Constant, Term
 
 
+def is_exact_zero(a) -> bool:
+    """Checks whether a is the neutral element of the addition.
+
+    Only plain floats are considered: skipping a tensor that happens to be 0.0
+    would drop it from the computation graph, even though its gradient is not 0.
+    """
+    return type(a) is float and a == 0.0
+
+
+def is_exact_one(a) -> bool:
+    """Checks whether a is the neutral element of the multiplication.
+
+    Only plain floats are considered: skipping a tensor that happens to be 1.0
+    would drop it from the computation graph, even though its gradient is not 0.
+    """
+    return type(a) is float and a == 1.0
+
+
 def get_hook(optimizer: Optimizer, i):
     def hook(grad):
         optimizer.add_parameter_gradient(i, grad)
@@ -29,16 +47,16 @@ class GraphSemiring(Semiring):
         return 0.0
 
     def plus(self, a, b):
-        if self.is_zero(b):
+        if is_exact_zero(b):
             return a
-        if self.is_zero(a):
+        if is_exact_zero(a):
             return b
         return a + b
 
     def times(self, a, b):
-        if self.is_one(b):
+        if is_exact_one(b):
             return a
-        if self.is_one(a):
+        if is_exact_one(a):
             return b
         return a * b
 
@@ -80,7 +98,7 @@ class GraphSemiring(Semiring):
         return True
 
     def normalize(self, a, z):
-        if self.is_one(z):
+        if is_exact_one(z):
             return a
         return a / z
 
