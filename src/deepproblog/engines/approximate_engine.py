@@ -16,6 +16,7 @@ from deepproblog.engines.prolog_engine import (
     PrologEngine,
     pyswip_to_term,
     term_to_pyswip,
+    unify,
 )
 from deepproblog.engines.prolog_engine.heuristics import (
     GeometricMean,
@@ -141,7 +142,7 @@ class ApproximateEngine(Engine):
             out = net([term2list(arguments, False)])[0]
             out = wrap_tensor(out, self.tensor_store)
             out = term_to_pyswip(out)
-            output_var.unify(out)
+            unify(output_var, out)
 
         func.arity = 2
         return func
@@ -210,7 +211,7 @@ class ApproximateEngine(Engine):
             result = [term_to_pyswip(r) for r in result]
             for o, r in zip(output_args, result):
                 if type(o) is Variable:
-                    o.unify(r)
+                    unify(o, r)
                 else:
                     if o != r:
                         return False

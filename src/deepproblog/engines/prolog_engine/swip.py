@@ -14,6 +14,8 @@ from problog.logic import (
 from problog.parser import PrologParser
 from problog.program import ExtendedPrologFactory
 from pyswip import Functor, Atom, Variable
+from pyswip.easy import Term as PySwipTerm, putTerm
+from pyswip.core import PL_copy_term_ref, PL_new_term_ref, PL_unify
 
 PySwipObject = Union[Functor, Atom, Variable, int, float, list, bytes]
 ProblogObject = Union[Term, Constant, Var, Clause, And, Or]
@@ -91,3 +93,56 @@ def parse(to_parse: Union[str, PySwipObject]) -> ProblogObject:
     if type(to_parse) is str:
         return _parser.parseString(str(to_parse) + ".")[0]
     return pyswip_to_term(to_parse)
+
+
+def bindings_to_dict(bindings: list) -> Dict[str, PySwipObject]:
+    """Turn the raw binding list of a query into a dictionary.
+
+    Queries are run with normalize=False, because normalization renders
+    compound terms as strings, which cannot be turned back into ProbLog terms.
+    The raw result is a list of Name=Value terms.
+    """
+    result = dict()
+    for binding in bindings:
+        name, value = binding.args
+        result[name.value if isinstance(name, Atom) else str(name)] = value
+    return result
+
+
+def unify(variable: Variable, value: PySwipObject) -> None:
+    """Unify a variable with a value, including compound terms.
+
+    Variable.unify does not handle compound terms, so those are put into a
+    term reference and unified directly.
+    """
+    if not isinstance(value, PySwipTerm):
+        variable.unify(value)
+        return
+    if variable.handle is None:
+        handle = PL_new_term_ref()
+    else:
+        handle = PL_copy_term_ref(variable.handle)
+    reference = PL_new_term_ref()
+    putTerm(reference, value)
+    PL_unify(handle, reference)
+    variable.handle = handle
+
+
+def _value(pyswip_obj: PySwipObject):
+    try:
+        return pyswip_obj.value
+    except AttributeError:
+        return pyswip_obj
+
+
+def _unifier(arity, *args):
+    """Handler for =/2 terms.
+
+    PySwip installs one itself, but it raises an AttributeError when the first
+    argument has no value, such as the integer in a(X) :- X = 3.
+    """
+    assert arity == 2
+    return {_value(args[0]): _value(args[1])}
+
+
+Functor.func[Functor("=", 2).handle] = _unifier

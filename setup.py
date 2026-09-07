@@ -33,7 +33,7 @@ setup(
                       "torch",
                       "torchvision"],
     extras_require={
-#        "approximate": ["pyswip @ git+https://github.com/ML-KULeuven/pyswip.git#egg=pyswip"],
+        "approximate": ["pyswip>=0.3.3"],
         "examples": ["Pillow"],
         "tests": ["pytest"],
     },
