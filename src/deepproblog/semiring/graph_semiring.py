@@ -124,21 +124,25 @@ class GraphSemiring(Semiring):
                 )
         else:
             p = result[q]
+        # Round-off can push p just outside [0, 1]. Clamping keeps the loss finite
+        # and stops the gradient from pushing p even further out of range.
         if type(p) is float:
+            pos, neg = max(p, 0.0), max(1.0 - p, 0.0)
             loss = (
-                -(target * math.log(p + eps) + (1.0 - target) * math.log(1.0 - p + eps))
+                -(target * math.log(pos + eps) + (1.0 - target) * math.log(neg + eps))
                 * weight
             )
         else:
+            pos, neg = p.clamp(min=0.0), (1.0 - p).clamp(min=0.0)
             if target == 1.0:
-                loss = -torch.log(p + eps) * weight
+                loss = -torch.log(pos + eps) * weight
             elif target == 0.0:
-                loss = -torch.log(1.0 - p + eps) * weight
+                loss = -torch.log(neg + eps) * weight
             else:
                 loss = (
                     -(
-                        target * torch.log(p + eps)
-                        + (1.0 - target) * torch.log(1.0 - p + eps)
+                        target * torch.log(pos + eps)
+                        + (1.0 - target) * torch.log(neg + eps)
                     )
                     * weight
                 )

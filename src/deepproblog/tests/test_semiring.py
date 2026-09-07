@@ -8,6 +8,7 @@ from deepproblog.model import Model
 from deepproblog.network import Network
 from deepproblog.optimizer import SGD
 from deepproblog.query import Query
+from deepproblog.semiring import Result
 from deepproblog.semiring.graph_semiring import (
     GraphSemiring,
     is_exact_one,
@@ -194,3 +195,27 @@ addition(X1,X2,S) :- digit(X1,Y1), digit(X2,Y2), S is Y1+Y2.
             model.optimizer.step()
         losses.append(epoch_loss / len(queries))
     assert losses[-1] < losses[0]
+
+
+@pytest.mark.parametrize(
+    "target,p", [(1.0, -1.192093e-07), (0.0, 1.0 + 1.192093e-07)]
+)
+def test_loss_survives_round_off_probabilities(target, p):
+    """float32 round-off can push a probability just outside [0, 1].
+
+    The loss should stay finite, and should never push the probability even
+    further out of range.
+    """
+    p = torch.tensor(p, requires_grad=True)
+    loss = GraphSemiring.cross_entropy(Result({Term("q"): p}, None), target, 1.0, q=Term("q"))
+    assert not math.isnan(loss) and not math.isinf(loss)
+    if target == 1.0:
+        assert float(p.grad) <= 0.0, "gradient pushes p further below 0"
+    else:
+        assert float(p.grad) >= 0.0, "gradient pushes p further above 1"
+
+
+def test_float_loss_survives_round_off_probabilities():
+    """The same, for a query that evaluates to a plain float."""
+    loss = GraphSemiring.cross_entropy(Result({Term("q"): -1.192093e-07}, None), 1.0, 1.0, q=Term("q"))
+    assert not math.isnan(loss) and not math.isinf(loss)
