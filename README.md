@@ -35,8 +35,8 @@ DeepProbLog has the following requirements:
 ## Approximate Inference
 
 To use Approximate Inference, we have the following additional requirements
-* [PySwip](https://github.com/ML-KULeuven/pyswip) 
-    - Use `pip install git+https://github.com/ML-KULeuven/pyswip`
+* [PySwip](https://github.com/yuce/pyswip)
+    - Use `pip install pyswip`
 * [SWI-Prolog < 9.0.0](https://www.swi-prolog.org/)
 The latter can be installed on Ubuntu with the following commands:
 ```

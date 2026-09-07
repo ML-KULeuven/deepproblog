@@ -11,13 +11,31 @@ from problog.logic import Term, Clause, Or, AnnotatedDisjunction, Var
 from problog.logic import term2list, ArithmeticError
 from problog.program import LogicProgram
 from pyswip import Prolog, registerForeign, Variable
+from pyswip.prolog import PrologError
 
 from .heuristics import Heuristic
-from .swip import parse, pyswip_to_term
+from .swip import bindings_to_dict, parse, pyswip_to_term
 
 ALL_FACTS = "fa(_,_,_,_)"
 
 ALL_CLAUSES = "cl(_,_,_)"
+
+def _translate_error(error: PrologError) -> Exception:
+    """Turn a Prolog exception into the matching Python exception.
+
+    PySwip raises a single PrologError for every Prolog exception, but the
+    engine distinguishes between a timeout, an exhausted stack and an
+    overflow.
+    """
+    message = str(error)
+    if "time_limit_exceeded" in message:
+        return TimeoutError()
+    if "resource_error(stack)" in message:
+        return MemoryError()
+    if "evaluation_error(float_overflow)" in message:
+        return OverflowError()
+    return error
+
 
 ids = 0
 current_program = None
@@ -310,7 +328,14 @@ class SWIProgram(ProbLogObject):
             if profile > 1:
                 # query = 'profile((between(1,100,_),{},fail);true)'.format(query)
                 query = f"profile({query})"
-        result = list(self.prolog.query(query))
+        try:
+            # normalize=False keeps compound terms as terms instead of strings.
+            result = [
+                bindings_to_dict(b)
+                for b in self.prolog.query(query, normalize=False)
+            ]
+        except PrologError as e:
+            raise _translate_error(e)
         if profile > 0:
             print(f"Query: {query} answered in {time() - start} seconds")
             if profile > 1:
@@ -322,14 +347,6 @@ class SWIProgram(ProbLogObject):
                 for k in r:
                     v = result[0][k]
                     if type(v) is list:
-                        if len(v) > 1 and isinstance(v[0], str):
-                            raise TypeError("Oops, it appears you are using the wrong version of PySwip.\n"
-                                            "Please make sure you are using PySwip from https://github.com/ML-KULeuven/pyswip\n"
-                                            "To install, first remove your current PySwip version, then install the correct version.\n"
-                                            "You can try doing\n'pip install git+https://github.com/ML-KULeuven/pyswip'.\n"
-                                            "For some reason, this does not always resolve the issue. If you still get this error,\n"
-                                            "clone the repo locally, then compile from your local codebase doing\n"
-                                            "'pip install [path to local clone]'.")
                         out_partial[k] = [p for p in term2list(parse(result[0][k]))]
                     else:
                         out_partial[k] = parse(v)
