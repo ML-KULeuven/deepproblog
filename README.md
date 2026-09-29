@@ -6,6 +6,11 @@ that integrates Probabilistic Logic Programming with deep learning by introducin
 The neural predicate represents probabilistic facts whose probabilites are parameterized by neural networks.
 For more information, consult the papers listed below.
 
+> **See also [DeepLog](https://github.com/ML-KULeuven/deeplog)**, the PyTorch for neurosymbolic AI, from the same lab.
+> State the logic, and DeepLog compiles it into a differentiable PyTorch module that runs on the GPU;
+> DeepProbLog models are among the ones it can express.
+> Read the [DeepLog documentation](https://dtai.cs.kuleuven.be/deeplog/) to get started.
+
 ## Installation
 DeepProbLog can easily be installed using the following command:
 Make sure the following packages are installed:
